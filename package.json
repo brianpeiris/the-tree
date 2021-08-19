@@ -1,0 +1,1 @@
+{"private":true,"scripts":{"dev":"esbuild --sourcemap --bundle --outfile=bundle.js --watch index.js"},"dependencies":{"@babel/eslint-parser":"^7.15.0","enable3d":"^0.23.0","esbuild":"^0.12.20","eslint":"^7.32.0"}}
