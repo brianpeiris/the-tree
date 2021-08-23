@@ -4693,6 +4693,565 @@
     }
   });
 
+  // node_modules/simplex-noise/simplex-noise.js
+  var require_simplex_noise = __commonJS({
+    "node_modules/simplex-noise/simplex-noise.js"(exports, module) {
+      (function() {
+        "use strict";
+        var F2 = 0.5 * (Math.sqrt(3) - 1);
+        var G2 = (3 - Math.sqrt(3)) / 6;
+        var F3 = 1 / 3;
+        var G3 = 1 / 6;
+        var F4 = (Math.sqrt(5) - 1) / 4;
+        var G4 = (5 - Math.sqrt(5)) / 20;
+        function SimplexNoise2(randomOrSeed) {
+          var random;
+          if (typeof randomOrSeed == "function") {
+            random = randomOrSeed;
+          } else if (randomOrSeed) {
+            random = alea(randomOrSeed);
+          } else {
+            random = Math.random;
+          }
+          this.p = buildPermutationTable(random);
+          this.perm = new Uint8Array(512);
+          this.permMod12 = new Uint8Array(512);
+          for (var i = 0; i < 512; i++) {
+            this.perm[i] = this.p[i & 255];
+            this.permMod12[i] = this.perm[i] % 12;
+          }
+        }
+        SimplexNoise2.prototype = {
+          grad3: new Float32Array([
+            1,
+            1,
+            0,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            1,
+            0,
+            1,
+            -1,
+            0,
+            1,
+            1,
+            0,
+            -1,
+            -1,
+            0,
+            -1,
+            0,
+            1,
+            1,
+            0,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            0,
+            -1,
+            -1
+          ]),
+          grad4: new Float32Array([
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            -1,
+            0,
+            1,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            1,
+            0,
+            -1,
+            1,
+            -1,
+            0,
+            -1,
+            -1,
+            1,
+            0,
+            -1,
+            -1,
+            -1,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            -1,
+            1,
+            0,
+            -1,
+            1,
+            1,
+            0,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            1,
+            -1,
+            0,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            -1,
+            0,
+            -1,
+            -1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            -1,
+            1,
+            -1,
+            0,
+            1,
+            1,
+            -1,
+            0,
+            -1,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            1,
+            0,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            -1,
+            0,
+            1,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            1,
+            0,
+            -1,
+            1,
+            -1,
+            0,
+            -1,
+            -1,
+            1,
+            0,
+            -1,
+            -1,
+            -1,
+            0
+          ]),
+          noise2D: function(xin, yin) {
+            var permMod12 = this.permMod12;
+            var perm = this.perm;
+            var grad3 = this.grad3;
+            var n0 = 0;
+            var n1 = 0;
+            var n2 = 0;
+            var s = (xin + yin) * F2;
+            var i = Math.floor(xin + s);
+            var j = Math.floor(yin + s);
+            var t = (i + j) * G2;
+            var X0 = i - t;
+            var Y0 = j - t;
+            var x0 = xin - X0;
+            var y0 = yin - Y0;
+            var i1, j1;
+            if (x0 > y0) {
+              i1 = 1;
+              j1 = 0;
+            } else {
+              i1 = 0;
+              j1 = 1;
+            }
+            var x1 = x0 - i1 + G2;
+            var y1 = y0 - j1 + G2;
+            var x2 = x0 - 1 + 2 * G2;
+            var y2 = y0 - 1 + 2 * G2;
+            var ii = i & 255;
+            var jj = j & 255;
+            var t0 = 0.5 - x0 * x0 - y0 * y0;
+            if (t0 >= 0) {
+              var gi0 = permMod12[ii + perm[jj]] * 3;
+              t0 *= t0;
+              n0 = t0 * t0 * (grad3[gi0] * x0 + grad3[gi0 + 1] * y0);
+            }
+            var t1 = 0.5 - x1 * x1 - y1 * y1;
+            if (t1 >= 0) {
+              var gi1 = permMod12[ii + i1 + perm[jj + j1]] * 3;
+              t1 *= t1;
+              n1 = t1 * t1 * (grad3[gi1] * x1 + grad3[gi1 + 1] * y1);
+            }
+            var t2 = 0.5 - x2 * x2 - y2 * y2;
+            if (t2 >= 0) {
+              var gi2 = permMod12[ii + 1 + perm[jj + 1]] * 3;
+              t2 *= t2;
+              n2 = t2 * t2 * (grad3[gi2] * x2 + grad3[gi2 + 1] * y2);
+            }
+            return 70 * (n0 + n1 + n2);
+          },
+          noise3D: function(xin, yin, zin) {
+            var permMod12 = this.permMod12;
+            var perm = this.perm;
+            var grad3 = this.grad3;
+            var n0, n1, n2, n3;
+            var s = (xin + yin + zin) * F3;
+            var i = Math.floor(xin + s);
+            var j = Math.floor(yin + s);
+            var k = Math.floor(zin + s);
+            var t = (i + j + k) * G3;
+            var X0 = i - t;
+            var Y0 = j - t;
+            var Z0 = k - t;
+            var x0 = xin - X0;
+            var y0 = yin - Y0;
+            var z0 = zin - Z0;
+            var i1, j1, k1;
+            var i2, j2, k2;
+            if (x0 >= y0) {
+              if (y0 >= z0) {
+                i1 = 1;
+                j1 = 0;
+                k1 = 0;
+                i2 = 1;
+                j2 = 1;
+                k2 = 0;
+              } else if (x0 >= z0) {
+                i1 = 1;
+                j1 = 0;
+                k1 = 0;
+                i2 = 1;
+                j2 = 0;
+                k2 = 1;
+              } else {
+                i1 = 0;
+                j1 = 0;
+                k1 = 1;
+                i2 = 1;
+                j2 = 0;
+                k2 = 1;
+              }
+            } else {
+              if (y0 < z0) {
+                i1 = 0;
+                j1 = 0;
+                k1 = 1;
+                i2 = 0;
+                j2 = 1;
+                k2 = 1;
+              } else if (x0 < z0) {
+                i1 = 0;
+                j1 = 1;
+                k1 = 0;
+                i2 = 0;
+                j2 = 1;
+                k2 = 1;
+              } else {
+                i1 = 0;
+                j1 = 1;
+                k1 = 0;
+                i2 = 1;
+                j2 = 1;
+                k2 = 0;
+              }
+            }
+            var x1 = x0 - i1 + G3;
+            var y1 = y0 - j1 + G3;
+            var z1 = z0 - k1 + G3;
+            var x2 = x0 - i2 + 2 * G3;
+            var y2 = y0 - j2 + 2 * G3;
+            var z2 = z0 - k2 + 2 * G3;
+            var x3 = x0 - 1 + 3 * G3;
+            var y3 = y0 - 1 + 3 * G3;
+            var z3 = z0 - 1 + 3 * G3;
+            var ii = i & 255;
+            var jj = j & 255;
+            var kk = k & 255;
+            var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+            if (t0 < 0)
+              n0 = 0;
+            else {
+              var gi0 = permMod12[ii + perm[jj + perm[kk]]] * 3;
+              t0 *= t0;
+              n0 = t0 * t0 * (grad3[gi0] * x0 + grad3[gi0 + 1] * y0 + grad3[gi0 + 2] * z0);
+            }
+            var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+            if (t1 < 0)
+              n1 = 0;
+            else {
+              var gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]] * 3;
+              t1 *= t1;
+              n1 = t1 * t1 * (grad3[gi1] * x1 + grad3[gi1 + 1] * y1 + grad3[gi1 + 2] * z1);
+            }
+            var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+            if (t2 < 0)
+              n2 = 0;
+            else {
+              var gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]] * 3;
+              t2 *= t2;
+              n2 = t2 * t2 * (grad3[gi2] * x2 + grad3[gi2 + 1] * y2 + grad3[gi2 + 2] * z2);
+            }
+            var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+            if (t3 < 0)
+              n3 = 0;
+            else {
+              var gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]] * 3;
+              t3 *= t3;
+              n3 = t3 * t3 * (grad3[gi3] * x3 + grad3[gi3 + 1] * y3 + grad3[gi3 + 2] * z3);
+            }
+            return 32 * (n0 + n1 + n2 + n3);
+          },
+          noise4D: function(x, y, z, w) {
+            var perm = this.perm;
+            var grad4 = this.grad4;
+            var n0, n1, n2, n3, n4;
+            var s = (x + y + z + w) * F4;
+            var i = Math.floor(x + s);
+            var j = Math.floor(y + s);
+            var k = Math.floor(z + s);
+            var l = Math.floor(w + s);
+            var t = (i + j + k + l) * G4;
+            var X0 = i - t;
+            var Y0 = j - t;
+            var Z0 = k - t;
+            var W0 = l - t;
+            var x0 = x - X0;
+            var y0 = y - Y0;
+            var z0 = z - Z0;
+            var w0 = w - W0;
+            var rankx = 0;
+            var ranky = 0;
+            var rankz = 0;
+            var rankw = 0;
+            if (x0 > y0)
+              rankx++;
+            else
+              ranky++;
+            if (x0 > z0)
+              rankx++;
+            else
+              rankz++;
+            if (x0 > w0)
+              rankx++;
+            else
+              rankw++;
+            if (y0 > z0)
+              ranky++;
+            else
+              rankz++;
+            if (y0 > w0)
+              ranky++;
+            else
+              rankw++;
+            if (z0 > w0)
+              rankz++;
+            else
+              rankw++;
+            var i1, j1, k1, l1;
+            var i2, j2, k2, l2;
+            var i3, j3, k3, l3;
+            i1 = rankx >= 3 ? 1 : 0;
+            j1 = ranky >= 3 ? 1 : 0;
+            k1 = rankz >= 3 ? 1 : 0;
+            l1 = rankw >= 3 ? 1 : 0;
+            i2 = rankx >= 2 ? 1 : 0;
+            j2 = ranky >= 2 ? 1 : 0;
+            k2 = rankz >= 2 ? 1 : 0;
+            l2 = rankw >= 2 ? 1 : 0;
+            i3 = rankx >= 1 ? 1 : 0;
+            j3 = ranky >= 1 ? 1 : 0;
+            k3 = rankz >= 1 ? 1 : 0;
+            l3 = rankw >= 1 ? 1 : 0;
+            var x1 = x0 - i1 + G4;
+            var y1 = y0 - j1 + G4;
+            var z1 = z0 - k1 + G4;
+            var w1 = w0 - l1 + G4;
+            var x2 = x0 - i2 + 2 * G4;
+            var y2 = y0 - j2 + 2 * G4;
+            var z2 = z0 - k2 + 2 * G4;
+            var w2 = w0 - l2 + 2 * G4;
+            var x3 = x0 - i3 + 3 * G4;
+            var y3 = y0 - j3 + 3 * G4;
+            var z3 = z0 - k3 + 3 * G4;
+            var w3 = w0 - l3 + 3 * G4;
+            var x4 = x0 - 1 + 4 * G4;
+            var y4 = y0 - 1 + 4 * G4;
+            var z4 = z0 - 1 + 4 * G4;
+            var w4 = w0 - 1 + 4 * G4;
+            var ii = i & 255;
+            var jj = j & 255;
+            var kk = k & 255;
+            var ll = l & 255;
+            var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
+            if (t0 < 0)
+              n0 = 0;
+            else {
+              var gi0 = perm[ii + perm[jj + perm[kk + perm[ll]]]] % 32 * 4;
+              t0 *= t0;
+              n0 = t0 * t0 * (grad4[gi0] * x0 + grad4[gi0 + 1] * y0 + grad4[gi0 + 2] * z0 + grad4[gi0 + 3] * w0);
+            }
+            var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
+            if (t1 < 0)
+              n1 = 0;
+            else {
+              var gi1 = perm[ii + i1 + perm[jj + j1 + perm[kk + k1 + perm[ll + l1]]]] % 32 * 4;
+              t1 *= t1;
+              n1 = t1 * t1 * (grad4[gi1] * x1 + grad4[gi1 + 1] * y1 + grad4[gi1 + 2] * z1 + grad4[gi1 + 3] * w1);
+            }
+            var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
+            if (t2 < 0)
+              n2 = 0;
+            else {
+              var gi2 = perm[ii + i2 + perm[jj + j2 + perm[kk + k2 + perm[ll + l2]]]] % 32 * 4;
+              t2 *= t2;
+              n2 = t2 * t2 * (grad4[gi2] * x2 + grad4[gi2 + 1] * y2 + grad4[gi2 + 2] * z2 + grad4[gi2 + 3] * w2);
+            }
+            var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
+            if (t3 < 0)
+              n3 = 0;
+            else {
+              var gi3 = perm[ii + i3 + perm[jj + j3 + perm[kk + k3 + perm[ll + l3]]]] % 32 * 4;
+              t3 *= t3;
+              n3 = t3 * t3 * (grad4[gi3] * x3 + grad4[gi3 + 1] * y3 + grad4[gi3 + 2] * z3 + grad4[gi3 + 3] * w3);
+            }
+            var t4 = 0.6 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
+            if (t4 < 0)
+              n4 = 0;
+            else {
+              var gi4 = perm[ii + 1 + perm[jj + 1 + perm[kk + 1 + perm[ll + 1]]]] % 32 * 4;
+              t4 *= t4;
+              n4 = t4 * t4 * (grad4[gi4] * x4 + grad4[gi4 + 1] * y4 + grad4[gi4 + 2] * z4 + grad4[gi4 + 3] * w4);
+            }
+            return 27 * (n0 + n1 + n2 + n3 + n4);
+          }
+        };
+        function buildPermutationTable(random) {
+          var i;
+          var p = new Uint8Array(256);
+          for (i = 0; i < 256; i++) {
+            p[i] = i;
+          }
+          for (i = 0; i < 255; i++) {
+            var r = i + ~~(random() * (256 - i));
+            var aux = p[i];
+            p[i] = p[r];
+            p[r] = aux;
+          }
+          return p;
+        }
+        SimplexNoise2._buildPermutationTable = buildPermutationTable;
+        function alea() {
+          var s0 = 0;
+          var s1 = 0;
+          var s2 = 0;
+          var c = 1;
+          var mash = masher();
+          s0 = mash(" ");
+          s1 = mash(" ");
+          s2 = mash(" ");
+          for (var i = 0; i < arguments.length; i++) {
+            s0 -= mash(arguments[i]);
+            if (s0 < 0) {
+              s0 += 1;
+            }
+            s1 -= mash(arguments[i]);
+            if (s1 < 0) {
+              s1 += 1;
+            }
+            s2 -= mash(arguments[i]);
+            if (s2 < 0) {
+              s2 += 1;
+            }
+          }
+          mash = null;
+          return function() {
+            var t = 2091639 * s0 + c * 23283064365386963e-26;
+            s0 = s1;
+            s1 = s2;
+            return s2 = t - (c = t | 0);
+          };
+        }
+        function masher() {
+          var n = 4022871197;
+          return function(data) {
+            data = data.toString();
+            for (var i = 0; i < data.length; i++) {
+              n += data.charCodeAt(i);
+              var h = 0.02519603282416938 * n;
+              n = h >>> 0;
+              h -= n;
+              h *= n;
+              n = h >>> 0;
+              h -= n;
+              n += h * 4294967296;
+            }
+            return (n >>> 0) * 23283064365386963e-26;
+          };
+        }
+        if (typeof define !== "undefined" && define.amd)
+          define(function() {
+            return SimplexNoise2;
+          });
+        if (typeof exports !== "undefined")
+          exports.SimplexNoise = SimplexNoise2;
+        else if (typeof window !== "undefined")
+          window.SimplexNoise = SimplexNoise2;
+        if (typeof module !== "undefined") {
+          module.exports = SimplexNoise2;
+        }
+      })();
+    }
+  });
+
   // node_modules/three/build/three.module.js
   var three_module_exports = {};
   __export(three_module_exports, {
@@ -26034,7 +26593,7 @@
       loader.setRequestHeader(this.requestHeader);
       loader.setWithCredentials(scope.withCredentials);
       let loaded = 0;
-      function loadTexture(i) {
+      function loadTexture2(i) {
         loader.load(url[i], function(buffer) {
           const texDatas = scope.parse(buffer, true);
           images[i] = {
@@ -26057,7 +26616,7 @@
       }
       if (Array.isArray(url)) {
         for (let i = 0, il = url.length; i < il; ++i) {
-          loadTexture(i);
+          loadTexture2(i);
         }
       } else {
         loader.load(url, function(buffer) {
@@ -26148,7 +26707,7 @@
       loader.setCrossOrigin(this.crossOrigin);
       loader.setPath(this.path);
       let loaded = 0;
-      function loadTexture(i) {
+      function loadTexture2(i) {
         loader.load(urls[i], function(image) {
           texture.images[i] = image;
           loaded++;
@@ -26160,7 +26719,7 @@
         }, void 0, onError);
       }
       for (let i = 0; i < urls.length; ++i) {
-        loadTexture(i);
+        loadTexture2(i);
       }
       return texture;
     }
@@ -44567,7 +45126,7 @@
             "void main() {",
             "",
             "float h = normalize( vWorldPosition + offset ).y;",
-            "gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );",
+            "gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 0.9 );",
             "",
             "}"
           ].join("\n");
@@ -49180,7 +49739,4958 @@
 		}`
   };
 
+  // node_modules/three/examples/jsm/objects/MarchingCubes.js
+  var MarchingCubes = class extends ImmediateRenderObject {
+    constructor(resolution, material, enableUvs, enableColors) {
+      super(material);
+      const scope = this;
+      const vlist = new Float32Array(12 * 3);
+      const nlist = new Float32Array(12 * 3);
+      const clist = new Float32Array(12 * 3);
+      this.enableUvs = enableUvs !== void 0 ? enableUvs : false;
+      this.enableColors = enableColors !== void 0 ? enableColors : false;
+      this.init = function(resolution2) {
+        this.resolution = resolution2;
+        this.isolation = 80;
+        this.size = resolution2;
+        this.size2 = this.size * this.size;
+        this.size3 = this.size2 * this.size;
+        this.halfsize = this.size / 2;
+        this.delta = 2 / this.size;
+        this.yd = this.size;
+        this.zd = this.size2;
+        this.field = new Float32Array(this.size3);
+        this.normal_cache = new Float32Array(this.size3 * 3);
+        this.palette = new Float32Array(this.size3 * 3);
+        this.maxCount = 4096;
+        this.count = 0;
+        this.hasPositions = false;
+        this.hasNormals = false;
+        this.hasColors = false;
+        this.hasUvs = false;
+        this.positionArray = new Float32Array(this.maxCount * 3);
+        this.normalArray = new Float32Array(this.maxCount * 3);
+        if (this.enableUvs) {
+          this.uvArray = new Float32Array(this.maxCount * 2);
+        }
+        if (this.enableColors) {
+          this.colorArray = new Float32Array(this.maxCount * 3);
+        }
+      };
+      function lerp2(a, b, t) {
+        return a + (b - a) * t;
+      }
+      function VIntX(q, offset, isol, x, y, z, valp1, valp2, c_offset1, c_offset2) {
+        const mu = (isol - valp1) / (valp2 - valp1), nc = scope.normal_cache;
+        vlist[offset + 0] = x + mu * scope.delta;
+        vlist[offset + 1] = y;
+        vlist[offset + 2] = z;
+        nlist[offset + 0] = lerp2(nc[q + 0], nc[q + 3], mu);
+        nlist[offset + 1] = lerp2(nc[q + 1], nc[q + 4], mu);
+        nlist[offset + 2] = lerp2(nc[q + 2], nc[q + 5], mu);
+        clist[offset + 0] = lerp2(scope.palette[c_offset1 * 3 + 0], scope.palette[c_offset2 * 3 + 0], mu);
+        clist[offset + 1] = lerp2(scope.palette[c_offset1 * 3 + 1], scope.palette[c_offset2 * 3 + 1], mu);
+        clist[offset + 2] = lerp2(scope.palette[c_offset1 * 3 + 2], scope.palette[c_offset2 * 3 + 2], mu);
+      }
+      function VIntY(q, offset, isol, x, y, z, valp1, valp2, c_offset1, c_offset2) {
+        const mu = (isol - valp1) / (valp2 - valp1), nc = scope.normal_cache;
+        vlist[offset + 0] = x;
+        vlist[offset + 1] = y + mu * scope.delta;
+        vlist[offset + 2] = z;
+        const q2 = q + scope.yd * 3;
+        nlist[offset + 0] = lerp2(nc[q + 0], nc[q2 + 0], mu);
+        nlist[offset + 1] = lerp2(nc[q + 1], nc[q2 + 1], mu);
+        nlist[offset + 2] = lerp2(nc[q + 2], nc[q2 + 2], mu);
+        clist[offset + 0] = lerp2(scope.palette[c_offset1 * 3 + 0], scope.palette[c_offset2 * 3 + 0], mu);
+        clist[offset + 1] = lerp2(scope.palette[c_offset1 * 3 + 1], scope.palette[c_offset2 * 3 + 1], mu);
+        clist[offset + 2] = lerp2(scope.palette[c_offset1 * 3 + 2], scope.palette[c_offset2 * 3 + 2], mu);
+      }
+      function VIntZ(q, offset, isol, x, y, z, valp1, valp2, c_offset1, c_offset2) {
+        const mu = (isol - valp1) / (valp2 - valp1), nc = scope.normal_cache;
+        vlist[offset + 0] = x;
+        vlist[offset + 1] = y;
+        vlist[offset + 2] = z + mu * scope.delta;
+        const q2 = q + scope.zd * 3;
+        nlist[offset + 0] = lerp2(nc[q + 0], nc[q2 + 0], mu);
+        nlist[offset + 1] = lerp2(nc[q + 1], nc[q2 + 1], mu);
+        nlist[offset + 2] = lerp2(nc[q + 2], nc[q2 + 2], mu);
+        clist[offset + 0] = lerp2(scope.palette[c_offset1 * 3 + 0], scope.palette[c_offset2 * 3 + 0], mu);
+        clist[offset + 1] = lerp2(scope.palette[c_offset1 * 3 + 1], scope.palette[c_offset2 * 3 + 1], mu);
+        clist[offset + 2] = lerp2(scope.palette[c_offset1 * 3 + 2], scope.palette[c_offset2 * 3 + 2], mu);
+      }
+      function compNorm(q) {
+        const q3 = q * 3;
+        if (scope.normal_cache[q3] === 0) {
+          scope.normal_cache[q3 + 0] = scope.field[q - 1] - scope.field[q + 1];
+          scope.normal_cache[q3 + 1] = scope.field[q - scope.yd] - scope.field[q + scope.yd];
+          scope.normal_cache[q3 + 2] = scope.field[q - scope.zd] - scope.field[q + scope.zd];
+        }
+      }
+      function polygonize(fx, fy, fz, q, isol, renderCallback) {
+        const q1 = q + 1, qy = q + scope.yd, qz = q + scope.zd, q1y = q1 + scope.yd, q1z = q1 + scope.zd, qyz = q + scope.yd + scope.zd, q1yz = q1 + scope.yd + scope.zd;
+        let cubeindex = 0;
+        const field0 = scope.field[q], field1 = scope.field[q1], field2 = scope.field[qy], field3 = scope.field[q1y], field4 = scope.field[qz], field5 = scope.field[q1z], field6 = scope.field[qyz], field7 = scope.field[q1yz];
+        if (field0 < isol)
+          cubeindex |= 1;
+        if (field1 < isol)
+          cubeindex |= 2;
+        if (field2 < isol)
+          cubeindex |= 8;
+        if (field3 < isol)
+          cubeindex |= 4;
+        if (field4 < isol)
+          cubeindex |= 16;
+        if (field5 < isol)
+          cubeindex |= 32;
+        if (field6 < isol)
+          cubeindex |= 128;
+        if (field7 < isol)
+          cubeindex |= 64;
+        const bits2 = edgeTable[cubeindex];
+        if (bits2 === 0)
+          return 0;
+        const d = scope.delta, fx2 = fx + d, fy2 = fy + d, fz2 = fz + d;
+        if (bits2 & 1) {
+          compNorm(q);
+          compNorm(q1);
+          VIntX(q * 3, 0, isol, fx, fy, fz, field0, field1, q, q1);
+        }
+        if (bits2 & 2) {
+          compNorm(q1);
+          compNorm(q1y);
+          VIntY(q1 * 3, 3, isol, fx2, fy, fz, field1, field3, q1, q1y);
+        }
+        if (bits2 & 4) {
+          compNorm(qy);
+          compNorm(q1y);
+          VIntX(qy * 3, 6, isol, fx, fy2, fz, field2, field3, qy, q1y);
+        }
+        if (bits2 & 8) {
+          compNorm(q);
+          compNorm(qy);
+          VIntY(q * 3, 9, isol, fx, fy, fz, field0, field2, q, qy);
+        }
+        if (bits2 & 16) {
+          compNorm(qz);
+          compNorm(q1z);
+          VIntX(qz * 3, 12, isol, fx, fy, fz2, field4, field5, qz, q1z);
+        }
+        if (bits2 & 32) {
+          compNorm(q1z);
+          compNorm(q1yz);
+          VIntY(q1z * 3, 15, isol, fx2, fy, fz2, field5, field7, q1z, q1yz);
+        }
+        if (bits2 & 64) {
+          compNorm(qyz);
+          compNorm(q1yz);
+          VIntX(qyz * 3, 18, isol, fx, fy2, fz2, field6, field7, qyz, q1yz);
+        }
+        if (bits2 & 128) {
+          compNorm(qz);
+          compNorm(qyz);
+          VIntY(qz * 3, 21, isol, fx, fy, fz2, field4, field6, qz, qyz);
+        }
+        if (bits2 & 256) {
+          compNorm(q);
+          compNorm(qz);
+          VIntZ(q * 3, 24, isol, fx, fy, fz, field0, field4, q, qz);
+        }
+        if (bits2 & 512) {
+          compNorm(q1);
+          compNorm(q1z);
+          VIntZ(q1 * 3, 27, isol, fx2, fy, fz, field1, field5, q1, q1z);
+        }
+        if (bits2 & 1024) {
+          compNorm(q1y);
+          compNorm(q1yz);
+          VIntZ(q1y * 3, 30, isol, fx2, fy2, fz, field3, field7, q1y, q1yz);
+        }
+        if (bits2 & 2048) {
+          compNorm(qy);
+          compNorm(qyz);
+          VIntZ(qy * 3, 33, isol, fx, fy2, fz, field2, field6, qy, qyz);
+        }
+        cubeindex <<= 4;
+        let o1, o2, o3, numtris = 0, i = 0;
+        while (triTable[cubeindex + i] != -1) {
+          o1 = cubeindex + i;
+          o2 = o1 + 1;
+          o3 = o1 + 2;
+          posnormtriv(vlist, nlist, clist, 3 * triTable[o1], 3 * triTable[o2], 3 * triTable[o3], renderCallback);
+          i += 3;
+          numtris++;
+        }
+        return numtris;
+      }
+      function posnormtriv(pos2, norm, colors, o1, o2, o3, renderCallback) {
+        const c = scope.count * 3;
+        scope.positionArray[c + 0] = pos2[o1];
+        scope.positionArray[c + 1] = pos2[o1 + 1];
+        scope.positionArray[c + 2] = pos2[o1 + 2];
+        scope.positionArray[c + 3] = pos2[o2];
+        scope.positionArray[c + 4] = pos2[o2 + 1];
+        scope.positionArray[c + 5] = pos2[o2 + 2];
+        scope.positionArray[c + 6] = pos2[o3];
+        scope.positionArray[c + 7] = pos2[o3 + 1];
+        scope.positionArray[c + 8] = pos2[o3 + 2];
+        if (scope.material.flatShading === true) {
+          const nx = (norm[o1 + 0] + norm[o2 + 0] + norm[o3 + 0]) / 3;
+          const ny = (norm[o1 + 1] + norm[o2 + 1] + norm[o3 + 1]) / 3;
+          const nz = (norm[o1 + 2] + norm[o2 + 2] + norm[o3 + 2]) / 3;
+          scope.normalArray[c + 0] = nx;
+          scope.normalArray[c + 1] = ny;
+          scope.normalArray[c + 2] = nz;
+          scope.normalArray[c + 3] = nx;
+          scope.normalArray[c + 4] = ny;
+          scope.normalArray[c + 5] = nz;
+          scope.normalArray[c + 6] = nx;
+          scope.normalArray[c + 7] = ny;
+          scope.normalArray[c + 8] = nz;
+        } else {
+          scope.normalArray[c + 0] = norm[o1 + 0];
+          scope.normalArray[c + 1] = norm[o1 + 1];
+          scope.normalArray[c + 2] = norm[o1 + 2];
+          scope.normalArray[c + 3] = norm[o2 + 0];
+          scope.normalArray[c + 4] = norm[o2 + 1];
+          scope.normalArray[c + 5] = norm[o2 + 2];
+          scope.normalArray[c + 6] = norm[o3 + 0];
+          scope.normalArray[c + 7] = norm[o3 + 1];
+          scope.normalArray[c + 8] = norm[o3 + 2];
+        }
+        if (scope.enableUvs) {
+          const d = scope.count * 2;
+          scope.uvArray[d + 0] = pos2[o1 + 0];
+          scope.uvArray[d + 1] = pos2[o1 + 2];
+          scope.uvArray[d + 2] = pos2[o2 + 0];
+          scope.uvArray[d + 3] = pos2[o2 + 2];
+          scope.uvArray[d + 4] = pos2[o3 + 0];
+          scope.uvArray[d + 5] = pos2[o3 + 2];
+        }
+        if (scope.enableColors) {
+          scope.colorArray[c + 0] = colors[o1 + 0];
+          scope.colorArray[c + 1] = colors[o1 + 1];
+          scope.colorArray[c + 2] = colors[o1 + 2];
+          scope.colorArray[c + 3] = colors[o2 + 0];
+          scope.colorArray[c + 4] = colors[o2 + 1];
+          scope.colorArray[c + 5] = colors[o2 + 2];
+          scope.colorArray[c + 6] = colors[o3 + 0];
+          scope.colorArray[c + 7] = colors[o3 + 1];
+          scope.colorArray[c + 8] = colors[o3 + 2];
+        }
+        scope.count += 3;
+        if (scope.count >= scope.maxCount - 3) {
+          scope.hasPositions = true;
+          scope.hasNormals = true;
+          if (scope.enableUvs) {
+            scope.hasUvs = true;
+          }
+          if (scope.enableColors) {
+            scope.hasColors = true;
+          }
+          renderCallback(scope);
+        }
+      }
+      this.begin = function() {
+        this.count = 0;
+        this.hasPositions = false;
+        this.hasNormals = false;
+        this.hasUvs = false;
+        this.hasColors = false;
+      };
+      this.end = function(renderCallback) {
+        if (this.count === 0)
+          return;
+        for (let i = this.count * 3; i < this.positionArray.length; i++) {
+          this.positionArray[i] = 0;
+        }
+        this.hasPositions = true;
+        this.hasNormals = true;
+        if (this.enableUvs && this.material.map) {
+          this.hasUvs = true;
+        }
+        if (this.enableColors && this.material.vertexColors !== NoColors) {
+          this.hasColors = true;
+        }
+        renderCallback(this);
+      };
+      this.addBall = function(ballx, bally, ballz, strength, subtract, colors) {
+        const sign2 = Math.sign(strength);
+        strength = Math.abs(strength);
+        const userDefineColor = !(colors === void 0 || colors === null);
+        let ballColor = new Color(ballx, bally, ballz);
+        if (userDefineColor) {
+          try {
+            ballColor = colors instanceof Color ? colors : Array.isArray(colors) ? new Color(Math.min(Math.abs(colors[0]), 1), Math.min(Math.abs(colors[1]), 1), Math.min(Math.abs(colors[2]), 1)) : new Color(colors);
+          } catch (err) {
+            ballColor = new Color(ballx, bally, ballz);
+          }
+        }
+        const radius = this.size * Math.sqrt(strength / subtract), zs = ballz * this.size, ys = bally * this.size, xs = ballx * this.size;
+        let min_z = Math.floor(zs - radius);
+        if (min_z < 1)
+          min_z = 1;
+        let max_z = Math.floor(zs + radius);
+        if (max_z > this.size - 1)
+          max_z = this.size - 1;
+        let min_y = Math.floor(ys - radius);
+        if (min_y < 1)
+          min_y = 1;
+        let max_y = Math.floor(ys + radius);
+        if (max_y > this.size - 1)
+          max_y = this.size - 1;
+        let min_x = Math.floor(xs - radius);
+        if (min_x < 1)
+          min_x = 1;
+        let max_x = Math.floor(xs + radius);
+        if (max_x > this.size - 1)
+          max_x = this.size - 1;
+        let x, y, z, y_offset, z_offset, fx, fy, fz, fz2, fy2, val;
+        for (z = min_z; z < max_z; z++) {
+          z_offset = this.size2 * z;
+          fz = z / this.size - ballz;
+          fz2 = fz * fz;
+          for (y = min_y; y < max_y; y++) {
+            y_offset = z_offset + this.size * y;
+            fy = y / this.size - bally;
+            fy2 = fy * fy;
+            for (x = min_x; x < max_x; x++) {
+              fx = x / this.size - ballx;
+              val = strength / (1e-6 + fx * fx + fy2 + fz2) - subtract;
+              if (val > 0) {
+                this.field[y_offset + x] += val * sign2;
+                const ratio = Math.sqrt((x - xs) * (x - xs) + (y - ys) * (y - ys) + (z - zs) * (z - zs)) / radius;
+                const contrib = 1 - ratio * ratio * ratio * (ratio * (ratio * 6 - 15) + 10);
+                this.palette[(y_offset + x) * 3 + 0] += ballColor.r * contrib;
+                this.palette[(y_offset + x) * 3 + 1] += ballColor.g * contrib;
+                this.palette[(y_offset + x) * 3 + 2] += ballColor.b * contrib;
+              }
+            }
+          }
+        }
+      };
+      this.addPlaneX = function(strength, subtract) {
+        const size2 = this.size, yd = this.yd, zd = this.zd, field = this.field;
+        let x, y, z, xx, val, xdiv, cxy, dist = size2 * Math.sqrt(strength / subtract);
+        if (dist > size2)
+          dist = size2;
+        for (x = 0; x < dist; x++) {
+          xdiv = x / size2;
+          xx = xdiv * xdiv;
+          val = strength / (1e-4 + xx) - subtract;
+          if (val > 0) {
+            for (y = 0; y < size2; y++) {
+              cxy = x + y * yd;
+              for (z = 0; z < size2; z++) {
+                field[zd * z + cxy] += val;
+              }
+            }
+          }
+        }
+      };
+      this.addPlaneY = function(strength, subtract) {
+        const size2 = this.size, yd = this.yd, zd = this.zd, field = this.field;
+        let x, y, z, yy, val, ydiv, cy, cxy, dist = size2 * Math.sqrt(strength / subtract);
+        if (dist > size2)
+          dist = size2;
+        for (y = 0; y < dist; y++) {
+          ydiv = y / size2;
+          yy = ydiv * ydiv;
+          val = strength / (1e-4 + yy) - subtract;
+          if (val > 0) {
+            cy = y * yd;
+            for (x = 0; x < size2; x++) {
+              cxy = cy + x;
+              for (z = 0; z < size2; z++)
+                field[zd * z + cxy] += val;
+            }
+          }
+        }
+      };
+      this.addPlaneZ = function(strength, subtract) {
+        const size2 = this.size, yd = this.yd, zd = this.zd, field = this.field;
+        let x, y, z, zz, val, zdiv, cz, cyz, dist = size2 * Math.sqrt(strength / subtract);
+        if (dist > size2)
+          dist = size2;
+        for (z = 0; z < dist; z++) {
+          zdiv = z / size2;
+          zz = zdiv * zdiv;
+          val = strength / (1e-4 + zz) - subtract;
+          if (val > 0) {
+            cz = zd * z;
+            for (y = 0; y < size2; y++) {
+              cyz = cz + y * yd;
+              for (x = 0; x < size2; x++)
+                field[cyz + x] += val;
+            }
+          }
+        }
+      };
+      this.setCell = function(x, y, z, value) {
+        const index = this.size2 * z + this.size * y + x;
+        this.field[index] = value;
+      };
+      this.getCell = function(x, y, z) {
+        const index = this.size2 * z + this.size * y + x;
+        return this.field[index];
+      };
+      this.blur = function(intensity = 1) {
+        const field = this.field;
+        const fieldCopy = field.slice();
+        const size2 = this.size;
+        const size22 = this.size2;
+        for (let x = 0; x < size2; x++) {
+          for (let y = 0; y < size2; y++) {
+            for (let z = 0; z < size2; z++) {
+              const index = size22 * z + size2 * y + x;
+              let val = fieldCopy[index];
+              let count = 1;
+              for (let x2 = -1; x2 <= 1; x2 += 2) {
+                const x3 = x2 + x;
+                if (x3 < 0 || x3 >= size2)
+                  continue;
+                for (let y2 = -1; y2 <= 1; y2 += 2) {
+                  const y3 = y2 + y;
+                  if (y3 < 0 || y3 >= size2)
+                    continue;
+                  for (let z2 = -1; z2 <= 1; z2 += 2) {
+                    const z3 = z2 + z;
+                    if (z3 < 0 || z3 >= size2)
+                      continue;
+                    const index2 = size22 * z3 + size2 * y3 + x3;
+                    const val2 = fieldCopy[index2];
+                    count++;
+                    val += intensity * (val2 - val) / count;
+                  }
+                }
+              }
+              field[index] = val;
+            }
+          }
+        }
+      };
+      this.reset = function() {
+        for (let i = 0; i < this.size3; i++) {
+          this.normal_cache[i * 3] = 0;
+          this.field[i] = 0;
+          this.palette[i * 3] = this.palette[i * 3 + 1] = this.palette[i * 3 + 2] = 0;
+        }
+      };
+      this.render = function(renderCallback) {
+        this.begin();
+        const smin2 = this.size - 2;
+        for (let z = 1; z < smin2; z++) {
+          const z_offset = this.size2 * z;
+          const fz = (z - this.halfsize) / this.halfsize;
+          for (let y = 1; y < smin2; y++) {
+            const y_offset = z_offset + this.size * y;
+            const fy = (y - this.halfsize) / this.halfsize;
+            for (let x = 1; x < smin2; x++) {
+              const fx = (x - this.halfsize) / this.halfsize;
+              const q = y_offset + x;
+              polygonize(fx, fy, fz, q, this.isolation, renderCallback);
+            }
+          }
+        }
+        this.end(renderCallback);
+      };
+      this.generateGeometry = function() {
+        console.warn("THREE.MarchingCubes: generateGeometry() now returns BufferGeometry");
+        return this.generateBufferGeometry();
+      };
+      function concatenate(a, b, length) {
+        const result = new Float32Array(a.length + length);
+        result.set(a, 0);
+        result.set(b.slice(0, length), a.length);
+        return result;
+      }
+      this.generateBufferGeometry = function() {
+        const geo = new BufferGeometry();
+        let posArray = new Float32Array();
+        let normArray = new Float32Array();
+        let colorArray = new Float32Array();
+        let uvArray = new Float32Array();
+        const scope2 = this;
+        const geo_callback = function(object) {
+          if (scope2.hasPositions)
+            posArray = concatenate(posArray, object.positionArray, object.count * 3);
+          if (scope2.hasNormals)
+            normArray = concatenate(normArray, object.normalArray, object.count * 3);
+          if (scope2.hasColors)
+            colorArray = concatenate(colorArray, object.colorArray, object.count * 3);
+          if (scope2.hasUvs)
+            uvArray = concatenate(uvArray, object.uvArray, object.count * 2);
+          object.count = 0;
+        };
+        this.render(geo_callback);
+        if (this.hasPositions)
+          geo.setAttribute("position", new BufferAttribute(posArray, 3));
+        if (this.hasNormals)
+          geo.setAttribute("normal", new BufferAttribute(normArray, 3));
+        if (this.hasColors)
+          geo.setAttribute("color", new BufferAttribute(colorArray, 3));
+        if (this.hasUvs)
+          geo.setAttribute("uv", new BufferAttribute(uvArray, 2));
+        return geo;
+      };
+      this.init(resolution);
+    }
+  };
+  MarchingCubes.prototype.isMarchingCubes = true;
+  var edgeTable = new Int32Array([
+    0,
+    265,
+    515,
+    778,
+    1030,
+    1295,
+    1541,
+    1804,
+    2060,
+    2309,
+    2575,
+    2822,
+    3082,
+    3331,
+    3593,
+    3840,
+    400,
+    153,
+    915,
+    666,
+    1430,
+    1183,
+    1941,
+    1692,
+    2460,
+    2197,
+    2975,
+    2710,
+    3482,
+    3219,
+    3993,
+    3728,
+    560,
+    825,
+    51,
+    314,
+    1590,
+    1855,
+    1077,
+    1340,
+    2620,
+    2869,
+    2111,
+    2358,
+    3642,
+    3891,
+    3129,
+    3376,
+    928,
+    681,
+    419,
+    170,
+    1958,
+    1711,
+    1445,
+    1196,
+    2988,
+    2725,
+    2479,
+    2214,
+    4010,
+    3747,
+    3497,
+    3232,
+    1120,
+    1385,
+    1635,
+    1898,
+    102,
+    367,
+    613,
+    876,
+    3180,
+    3429,
+    3695,
+    3942,
+    2154,
+    2403,
+    2665,
+    2912,
+    1520,
+    1273,
+    2035,
+    1786,
+    502,
+    255,
+    1013,
+    764,
+    3580,
+    3317,
+    4095,
+    3830,
+    2554,
+    2291,
+    3065,
+    2800,
+    1616,
+    1881,
+    1107,
+    1370,
+    598,
+    863,
+    85,
+    348,
+    3676,
+    3925,
+    3167,
+    3414,
+    2650,
+    2899,
+    2137,
+    2384,
+    1984,
+    1737,
+    1475,
+    1226,
+    966,
+    719,
+    453,
+    204,
+    4044,
+    3781,
+    3535,
+    3270,
+    3018,
+    2755,
+    2505,
+    2240,
+    2240,
+    2505,
+    2755,
+    3018,
+    3270,
+    3535,
+    3781,
+    4044,
+    204,
+    453,
+    719,
+    966,
+    1226,
+    1475,
+    1737,
+    1984,
+    2384,
+    2137,
+    2899,
+    2650,
+    3414,
+    3167,
+    3925,
+    3676,
+    348,
+    85,
+    863,
+    598,
+    1370,
+    1107,
+    1881,
+    1616,
+    2800,
+    3065,
+    2291,
+    2554,
+    3830,
+    4095,
+    3317,
+    3580,
+    764,
+    1013,
+    255,
+    502,
+    1786,
+    2035,
+    1273,
+    1520,
+    2912,
+    2665,
+    2403,
+    2154,
+    3942,
+    3695,
+    3429,
+    3180,
+    876,
+    613,
+    367,
+    102,
+    1898,
+    1635,
+    1385,
+    1120,
+    3232,
+    3497,
+    3747,
+    4010,
+    2214,
+    2479,
+    2725,
+    2988,
+    1196,
+    1445,
+    1711,
+    1958,
+    170,
+    419,
+    681,
+    928,
+    3376,
+    3129,
+    3891,
+    3642,
+    2358,
+    2111,
+    2869,
+    2620,
+    1340,
+    1077,
+    1855,
+    1590,
+    314,
+    51,
+    825,
+    560,
+    3728,
+    3993,
+    3219,
+    3482,
+    2710,
+    2975,
+    2197,
+    2460,
+    1692,
+    1941,
+    1183,
+    1430,
+    666,
+    915,
+    153,
+    400,
+    3840,
+    3593,
+    3331,
+    3082,
+    2822,
+    2575,
+    2309,
+    2060,
+    1804,
+    1541,
+    1295,
+    1030,
+    778,
+    515,
+    265,
+    0
+  ]);
+  var triTable = new Int32Array([
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    1,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    8,
+    3,
+    9,
+    8,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    3,
+    1,
+    2,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    2,
+    10,
+    0,
+    2,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    8,
+    3,
+    2,
+    10,
+    8,
+    10,
+    9,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    11,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    11,
+    2,
+    8,
+    11,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    9,
+    0,
+    2,
+    3,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    11,
+    2,
+    1,
+    9,
+    11,
+    9,
+    8,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    10,
+    1,
+    11,
+    10,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    10,
+    1,
+    0,
+    8,
+    10,
+    8,
+    11,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    9,
+    0,
+    3,
+    11,
+    9,
+    11,
+    10,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    8,
+    10,
+    10,
+    8,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    7,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    3,
+    0,
+    7,
+    3,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    1,
+    9,
+    8,
+    4,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    1,
+    9,
+    4,
+    7,
+    1,
+    7,
+    3,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    10,
+    8,
+    4,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    4,
+    7,
+    3,
+    0,
+    4,
+    1,
+    2,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    2,
+    10,
+    9,
+    0,
+    2,
+    8,
+    4,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    10,
+    9,
+    2,
+    9,
+    7,
+    2,
+    7,
+    3,
+    7,
+    9,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    4,
+    7,
+    3,
+    11,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    4,
+    7,
+    11,
+    2,
+    4,
+    2,
+    0,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    0,
+    1,
+    8,
+    4,
+    7,
+    2,
+    3,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    7,
+    11,
+    9,
+    4,
+    11,
+    9,
+    11,
+    2,
+    9,
+    2,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    10,
+    1,
+    3,
+    11,
+    10,
+    7,
+    8,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    11,
+    10,
+    1,
+    4,
+    11,
+    1,
+    0,
+    4,
+    7,
+    11,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    7,
+    8,
+    9,
+    0,
+    11,
+    9,
+    11,
+    10,
+    11,
+    0,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    7,
+    11,
+    4,
+    11,
+    9,
+    9,
+    11,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    4,
+    0,
+    8,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    5,
+    4,
+    1,
+    5,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    5,
+    4,
+    8,
+    3,
+    5,
+    3,
+    1,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    10,
+    9,
+    5,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    0,
+    8,
+    1,
+    2,
+    10,
+    4,
+    9,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    2,
+    10,
+    5,
+    4,
+    2,
+    4,
+    0,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    10,
+    5,
+    3,
+    2,
+    5,
+    3,
+    5,
+    4,
+    3,
+    4,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    4,
+    2,
+    3,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    11,
+    2,
+    0,
+    8,
+    11,
+    4,
+    9,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    5,
+    4,
+    0,
+    1,
+    5,
+    2,
+    3,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    1,
+    5,
+    2,
+    5,
+    8,
+    2,
+    8,
+    11,
+    4,
+    8,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    3,
+    11,
+    10,
+    1,
+    3,
+    9,
+    5,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    9,
+    5,
+    0,
+    8,
+    1,
+    8,
+    10,
+    1,
+    8,
+    11,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    4,
+    0,
+    5,
+    0,
+    11,
+    5,
+    11,
+    10,
+    11,
+    0,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    4,
+    8,
+    5,
+    8,
+    10,
+    10,
+    8,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    7,
+    8,
+    5,
+    7,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    3,
+    0,
+    9,
+    5,
+    3,
+    5,
+    7,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    7,
+    8,
+    0,
+    1,
+    7,
+    1,
+    5,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    5,
+    3,
+    3,
+    5,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    7,
+    8,
+    9,
+    5,
+    7,
+    10,
+    1,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    1,
+    2,
+    9,
+    5,
+    0,
+    5,
+    3,
+    0,
+    5,
+    7,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    0,
+    2,
+    8,
+    2,
+    5,
+    8,
+    5,
+    7,
+    10,
+    5,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    10,
+    5,
+    2,
+    5,
+    3,
+    3,
+    5,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    9,
+    5,
+    7,
+    8,
+    9,
+    3,
+    11,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    7,
+    9,
+    7,
+    2,
+    9,
+    2,
+    0,
+    2,
+    7,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    3,
+    11,
+    0,
+    1,
+    8,
+    1,
+    7,
+    8,
+    1,
+    5,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    2,
+    1,
+    11,
+    1,
+    7,
+    7,
+    1,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    8,
+    8,
+    5,
+    7,
+    10,
+    1,
+    3,
+    10,
+    3,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    7,
+    0,
+    5,
+    0,
+    9,
+    7,
+    11,
+    0,
+    1,
+    0,
+    10,
+    11,
+    10,
+    0,
+    -1,
+    11,
+    10,
+    0,
+    11,
+    0,
+    3,
+    10,
+    5,
+    0,
+    8,
+    0,
+    7,
+    5,
+    7,
+    0,
+    -1,
+    11,
+    10,
+    5,
+    7,
+    11,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    6,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    3,
+    5,
+    10,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    0,
+    1,
+    5,
+    10,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    8,
+    3,
+    1,
+    9,
+    8,
+    5,
+    10,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    6,
+    5,
+    2,
+    6,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    6,
+    5,
+    1,
+    2,
+    6,
+    3,
+    0,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    6,
+    5,
+    9,
+    0,
+    6,
+    0,
+    2,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    9,
+    8,
+    5,
+    8,
+    2,
+    5,
+    2,
+    6,
+    3,
+    2,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    3,
+    11,
+    10,
+    6,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    0,
+    8,
+    11,
+    2,
+    0,
+    10,
+    6,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    1,
+    9,
+    2,
+    3,
+    11,
+    5,
+    10,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    10,
+    6,
+    1,
+    9,
+    2,
+    9,
+    11,
+    2,
+    9,
+    8,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    3,
+    11,
+    6,
+    5,
+    3,
+    5,
+    1,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    11,
+    0,
+    11,
+    5,
+    0,
+    5,
+    1,
+    5,
+    11,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    11,
+    6,
+    0,
+    3,
+    6,
+    0,
+    6,
+    5,
+    0,
+    5,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    5,
+    9,
+    6,
+    9,
+    11,
+    11,
+    9,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    10,
+    6,
+    4,
+    7,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    3,
+    0,
+    4,
+    7,
+    3,
+    6,
+    5,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    9,
+    0,
+    5,
+    10,
+    6,
+    8,
+    4,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    6,
+    5,
+    1,
+    9,
+    7,
+    1,
+    7,
+    3,
+    7,
+    9,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    1,
+    2,
+    6,
+    5,
+    1,
+    4,
+    7,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    5,
+    5,
+    2,
+    6,
+    3,
+    0,
+    4,
+    3,
+    4,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    4,
+    7,
+    9,
+    0,
+    5,
+    0,
+    6,
+    5,
+    0,
+    2,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    3,
+    9,
+    7,
+    9,
+    4,
+    3,
+    2,
+    9,
+    5,
+    9,
+    6,
+    2,
+    6,
+    9,
+    -1,
+    3,
+    11,
+    2,
+    7,
+    8,
+    4,
+    10,
+    6,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    10,
+    6,
+    4,
+    7,
+    2,
+    4,
+    2,
+    0,
+    2,
+    7,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    1,
+    9,
+    4,
+    7,
+    8,
+    2,
+    3,
+    11,
+    5,
+    10,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    2,
+    1,
+    9,
+    11,
+    2,
+    9,
+    4,
+    11,
+    7,
+    11,
+    4,
+    5,
+    10,
+    6,
+    -1,
+    8,
+    4,
+    7,
+    3,
+    11,
+    5,
+    3,
+    5,
+    1,
+    5,
+    11,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    1,
+    11,
+    5,
+    11,
+    6,
+    1,
+    0,
+    11,
+    7,
+    11,
+    4,
+    0,
+    4,
+    11,
+    -1,
+    0,
+    5,
+    9,
+    0,
+    6,
+    5,
+    0,
+    3,
+    6,
+    11,
+    6,
+    3,
+    8,
+    4,
+    7,
+    -1,
+    6,
+    5,
+    9,
+    6,
+    9,
+    11,
+    4,
+    7,
+    9,
+    7,
+    11,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    4,
+    9,
+    6,
+    4,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    10,
+    6,
+    4,
+    9,
+    10,
+    0,
+    8,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    0,
+    1,
+    10,
+    6,
+    0,
+    6,
+    4,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    3,
+    1,
+    8,
+    1,
+    6,
+    8,
+    6,
+    4,
+    6,
+    1,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    4,
+    9,
+    1,
+    2,
+    4,
+    2,
+    6,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    0,
+    8,
+    1,
+    2,
+    9,
+    2,
+    4,
+    9,
+    2,
+    6,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    2,
+    4,
+    4,
+    2,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    3,
+    2,
+    8,
+    2,
+    4,
+    4,
+    2,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    4,
+    9,
+    10,
+    6,
+    4,
+    11,
+    2,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    2,
+    2,
+    8,
+    11,
+    4,
+    9,
+    10,
+    4,
+    10,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    11,
+    2,
+    0,
+    1,
+    6,
+    0,
+    6,
+    4,
+    6,
+    1,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    4,
+    1,
+    6,
+    1,
+    10,
+    4,
+    8,
+    1,
+    2,
+    1,
+    11,
+    8,
+    11,
+    1,
+    -1,
+    9,
+    6,
+    4,
+    9,
+    3,
+    6,
+    9,
+    1,
+    3,
+    11,
+    6,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    11,
+    1,
+    8,
+    1,
+    0,
+    11,
+    6,
+    1,
+    9,
+    1,
+    4,
+    6,
+    4,
+    1,
+    -1,
+    3,
+    11,
+    6,
+    3,
+    6,
+    0,
+    0,
+    6,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    4,
+    8,
+    11,
+    6,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    10,
+    6,
+    7,
+    8,
+    10,
+    8,
+    9,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    7,
+    3,
+    0,
+    10,
+    7,
+    0,
+    9,
+    10,
+    6,
+    7,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    6,
+    7,
+    1,
+    10,
+    7,
+    1,
+    7,
+    8,
+    1,
+    8,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    6,
+    7,
+    10,
+    7,
+    1,
+    1,
+    7,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    6,
+    1,
+    6,
+    8,
+    1,
+    8,
+    9,
+    8,
+    6,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    6,
+    9,
+    2,
+    9,
+    1,
+    6,
+    7,
+    9,
+    0,
+    9,
+    3,
+    7,
+    3,
+    9,
+    -1,
+    7,
+    8,
+    0,
+    7,
+    0,
+    6,
+    6,
+    0,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    3,
+    2,
+    6,
+    7,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    3,
+    11,
+    10,
+    6,
+    8,
+    10,
+    8,
+    9,
+    8,
+    6,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    0,
+    7,
+    2,
+    7,
+    11,
+    0,
+    9,
+    7,
+    6,
+    7,
+    10,
+    9,
+    10,
+    7,
+    -1,
+    1,
+    8,
+    0,
+    1,
+    7,
+    8,
+    1,
+    10,
+    7,
+    6,
+    7,
+    10,
+    2,
+    3,
+    11,
+    -1,
+    11,
+    2,
+    1,
+    11,
+    1,
+    7,
+    10,
+    6,
+    1,
+    6,
+    7,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    9,
+    6,
+    8,
+    6,
+    7,
+    9,
+    1,
+    6,
+    11,
+    6,
+    3,
+    1,
+    3,
+    6,
+    -1,
+    0,
+    9,
+    1,
+    11,
+    6,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    8,
+    0,
+    7,
+    0,
+    6,
+    3,
+    11,
+    0,
+    11,
+    6,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    11,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    6,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    0,
+    8,
+    11,
+    7,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    1,
+    9,
+    11,
+    7,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    1,
+    9,
+    8,
+    3,
+    1,
+    11,
+    7,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    1,
+    2,
+    6,
+    11,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    10,
+    3,
+    0,
+    8,
+    6,
+    11,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    9,
+    0,
+    2,
+    10,
+    9,
+    6,
+    11,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    11,
+    7,
+    2,
+    10,
+    3,
+    10,
+    8,
+    3,
+    10,
+    9,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    2,
+    3,
+    6,
+    2,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    0,
+    8,
+    7,
+    6,
+    0,
+    6,
+    2,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    7,
+    6,
+    2,
+    3,
+    7,
+    0,
+    1,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    6,
+    2,
+    1,
+    8,
+    6,
+    1,
+    9,
+    8,
+    8,
+    7,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    7,
+    6,
+    10,
+    1,
+    7,
+    1,
+    3,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    7,
+    6,
+    1,
+    7,
+    10,
+    1,
+    8,
+    7,
+    1,
+    0,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    3,
+    7,
+    0,
+    7,
+    10,
+    0,
+    10,
+    9,
+    6,
+    10,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    6,
+    10,
+    7,
+    10,
+    8,
+    8,
+    10,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    8,
+    4,
+    11,
+    8,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    6,
+    11,
+    3,
+    0,
+    6,
+    0,
+    4,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    6,
+    11,
+    8,
+    4,
+    6,
+    9,
+    0,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    4,
+    6,
+    9,
+    6,
+    3,
+    9,
+    3,
+    1,
+    11,
+    3,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    8,
+    4,
+    6,
+    11,
+    8,
+    2,
+    10,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    10,
+    3,
+    0,
+    11,
+    0,
+    6,
+    11,
+    0,
+    4,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    11,
+    8,
+    4,
+    6,
+    11,
+    0,
+    2,
+    9,
+    2,
+    10,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    9,
+    3,
+    10,
+    3,
+    2,
+    9,
+    4,
+    3,
+    11,
+    3,
+    6,
+    4,
+    6,
+    3,
+    -1,
+    8,
+    2,
+    3,
+    8,
+    4,
+    2,
+    4,
+    6,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    4,
+    2,
+    4,
+    6,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    9,
+    0,
+    2,
+    3,
+    4,
+    2,
+    4,
+    6,
+    4,
+    3,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    9,
+    4,
+    1,
+    4,
+    2,
+    2,
+    4,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    1,
+    3,
+    8,
+    6,
+    1,
+    8,
+    4,
+    6,
+    6,
+    10,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    1,
+    0,
+    10,
+    0,
+    6,
+    6,
+    0,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    6,
+    3,
+    4,
+    3,
+    8,
+    6,
+    10,
+    3,
+    0,
+    3,
+    9,
+    10,
+    9,
+    3,
+    -1,
+    10,
+    9,
+    4,
+    6,
+    10,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    9,
+    5,
+    7,
+    6,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    3,
+    4,
+    9,
+    5,
+    11,
+    7,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    0,
+    1,
+    5,
+    4,
+    0,
+    7,
+    6,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    7,
+    6,
+    8,
+    3,
+    4,
+    3,
+    5,
+    4,
+    3,
+    1,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    4,
+    10,
+    1,
+    2,
+    7,
+    6,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    11,
+    7,
+    1,
+    2,
+    10,
+    0,
+    8,
+    3,
+    4,
+    9,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    6,
+    11,
+    5,
+    4,
+    10,
+    4,
+    2,
+    10,
+    4,
+    0,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    4,
+    8,
+    3,
+    5,
+    4,
+    3,
+    2,
+    5,
+    10,
+    5,
+    2,
+    11,
+    7,
+    6,
+    -1,
+    7,
+    2,
+    3,
+    7,
+    6,
+    2,
+    5,
+    4,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    4,
+    0,
+    8,
+    6,
+    0,
+    6,
+    2,
+    6,
+    8,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    6,
+    2,
+    3,
+    7,
+    6,
+    1,
+    5,
+    0,
+    5,
+    4,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    2,
+    8,
+    6,
+    8,
+    7,
+    2,
+    1,
+    8,
+    4,
+    8,
+    5,
+    1,
+    5,
+    8,
+    -1,
+    9,
+    5,
+    4,
+    10,
+    1,
+    6,
+    1,
+    7,
+    6,
+    1,
+    3,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    6,
+    10,
+    1,
+    7,
+    6,
+    1,
+    0,
+    7,
+    8,
+    7,
+    0,
+    9,
+    5,
+    4,
+    -1,
+    4,
+    0,
+    10,
+    4,
+    10,
+    5,
+    0,
+    3,
+    10,
+    6,
+    10,
+    7,
+    3,
+    7,
+    10,
+    -1,
+    7,
+    6,
+    10,
+    7,
+    10,
+    8,
+    5,
+    4,
+    10,
+    4,
+    8,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    9,
+    5,
+    6,
+    11,
+    9,
+    11,
+    8,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    6,
+    11,
+    0,
+    6,
+    3,
+    0,
+    5,
+    6,
+    0,
+    9,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    11,
+    8,
+    0,
+    5,
+    11,
+    0,
+    1,
+    5,
+    5,
+    6,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    6,
+    11,
+    3,
+    6,
+    3,
+    5,
+    5,
+    3,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    10,
+    9,
+    5,
+    11,
+    9,
+    11,
+    8,
+    11,
+    5,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    11,
+    3,
+    0,
+    6,
+    11,
+    0,
+    9,
+    6,
+    5,
+    6,
+    9,
+    1,
+    2,
+    10,
+    -1,
+    11,
+    8,
+    5,
+    11,
+    5,
+    6,
+    8,
+    0,
+    5,
+    10,
+    5,
+    2,
+    0,
+    2,
+    5,
+    -1,
+    6,
+    11,
+    3,
+    6,
+    3,
+    5,
+    2,
+    10,
+    3,
+    10,
+    5,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    8,
+    9,
+    5,
+    2,
+    8,
+    5,
+    6,
+    2,
+    3,
+    8,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    5,
+    6,
+    9,
+    6,
+    0,
+    0,
+    6,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    5,
+    8,
+    1,
+    8,
+    0,
+    5,
+    6,
+    8,
+    3,
+    8,
+    2,
+    6,
+    2,
+    8,
+    -1,
+    1,
+    5,
+    6,
+    2,
+    1,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    3,
+    6,
+    1,
+    6,
+    10,
+    3,
+    8,
+    6,
+    5,
+    6,
+    9,
+    8,
+    9,
+    6,
+    -1,
+    10,
+    1,
+    0,
+    10,
+    0,
+    6,
+    9,
+    5,
+    0,
+    5,
+    6,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    3,
+    8,
+    5,
+    6,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    5,
+    6,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    5,
+    10,
+    7,
+    5,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    5,
+    10,
+    11,
+    7,
+    5,
+    8,
+    3,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    11,
+    7,
+    5,
+    10,
+    11,
+    1,
+    9,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    7,
+    5,
+    10,
+    11,
+    7,
+    9,
+    8,
+    1,
+    8,
+    3,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    1,
+    2,
+    11,
+    7,
+    1,
+    7,
+    5,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    3,
+    1,
+    2,
+    7,
+    1,
+    7,
+    5,
+    7,
+    2,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    7,
+    5,
+    9,
+    2,
+    7,
+    9,
+    0,
+    2,
+    2,
+    11,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    7,
+    5,
+    2,
+    7,
+    2,
+    11,
+    5,
+    9,
+    2,
+    3,
+    2,
+    8,
+    9,
+    8,
+    2,
+    -1,
+    2,
+    5,
+    10,
+    2,
+    3,
+    5,
+    3,
+    7,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    2,
+    0,
+    8,
+    5,
+    2,
+    8,
+    7,
+    5,
+    10,
+    2,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    0,
+    1,
+    5,
+    10,
+    3,
+    5,
+    3,
+    7,
+    3,
+    10,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    8,
+    2,
+    9,
+    2,
+    1,
+    8,
+    7,
+    2,
+    10,
+    2,
+    5,
+    7,
+    5,
+    2,
+    -1,
+    1,
+    3,
+    5,
+    3,
+    7,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    7,
+    0,
+    7,
+    1,
+    1,
+    7,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    0,
+    3,
+    9,
+    3,
+    5,
+    5,
+    3,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    8,
+    7,
+    5,
+    9,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    8,
+    4,
+    5,
+    10,
+    8,
+    10,
+    11,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    0,
+    4,
+    5,
+    11,
+    0,
+    5,
+    10,
+    11,
+    11,
+    3,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    1,
+    9,
+    8,
+    4,
+    10,
+    8,
+    10,
+    11,
+    10,
+    4,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    10,
+    11,
+    4,
+    10,
+    4,
+    5,
+    11,
+    3,
+    4,
+    9,
+    4,
+    1,
+    3,
+    1,
+    4,
+    -1,
+    2,
+    5,
+    1,
+    2,
+    8,
+    5,
+    2,
+    11,
+    8,
+    4,
+    5,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    4,
+    11,
+    0,
+    11,
+    3,
+    4,
+    5,
+    11,
+    2,
+    11,
+    1,
+    5,
+    1,
+    11,
+    -1,
+    0,
+    2,
+    5,
+    0,
+    5,
+    9,
+    2,
+    11,
+    5,
+    4,
+    5,
+    8,
+    11,
+    8,
+    5,
+    -1,
+    9,
+    4,
+    5,
+    2,
+    11,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    5,
+    10,
+    3,
+    5,
+    2,
+    3,
+    4,
+    5,
+    3,
+    8,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    5,
+    10,
+    2,
+    5,
+    2,
+    4,
+    4,
+    2,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    10,
+    2,
+    3,
+    5,
+    10,
+    3,
+    8,
+    5,
+    4,
+    5,
+    8,
+    0,
+    1,
+    9,
+    -1,
+    5,
+    10,
+    2,
+    5,
+    2,
+    4,
+    1,
+    9,
+    2,
+    9,
+    4,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    4,
+    5,
+    8,
+    5,
+    3,
+    3,
+    5,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    4,
+    5,
+    1,
+    0,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    8,
+    4,
+    5,
+    8,
+    5,
+    3,
+    9,
+    0,
+    5,
+    0,
+    3,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    4,
+    5,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    11,
+    7,
+    4,
+    9,
+    11,
+    9,
+    10,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    8,
+    3,
+    4,
+    9,
+    7,
+    9,
+    11,
+    7,
+    9,
+    10,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    10,
+    11,
+    1,
+    11,
+    4,
+    1,
+    4,
+    0,
+    7,
+    4,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    1,
+    4,
+    3,
+    4,
+    8,
+    1,
+    10,
+    4,
+    7,
+    4,
+    11,
+    10,
+    11,
+    4,
+    -1,
+    4,
+    11,
+    7,
+    9,
+    11,
+    4,
+    9,
+    2,
+    11,
+    9,
+    1,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    7,
+    4,
+    9,
+    11,
+    7,
+    9,
+    1,
+    11,
+    2,
+    11,
+    1,
+    0,
+    8,
+    3,
+    -1,
+    11,
+    7,
+    4,
+    11,
+    4,
+    2,
+    2,
+    4,
+    0,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    11,
+    7,
+    4,
+    11,
+    4,
+    2,
+    8,
+    3,
+    4,
+    3,
+    2,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    9,
+    10,
+    2,
+    7,
+    9,
+    2,
+    3,
+    7,
+    7,
+    4,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    10,
+    7,
+    9,
+    7,
+    4,
+    10,
+    2,
+    7,
+    8,
+    7,
+    0,
+    2,
+    0,
+    7,
+    -1,
+    3,
+    7,
+    10,
+    3,
+    10,
+    2,
+    7,
+    4,
+    10,
+    1,
+    10,
+    0,
+    4,
+    0,
+    10,
+    -1,
+    1,
+    10,
+    2,
+    8,
+    7,
+    4,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    9,
+    1,
+    4,
+    1,
+    7,
+    7,
+    1,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    9,
+    1,
+    4,
+    1,
+    7,
+    0,
+    8,
+    1,
+    8,
+    7,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    0,
+    3,
+    7,
+    4,
+    3,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    4,
+    8,
+    7,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    10,
+    8,
+    10,
+    11,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    0,
+    9,
+    3,
+    9,
+    11,
+    11,
+    9,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    1,
+    10,
+    0,
+    10,
+    8,
+    8,
+    10,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    1,
+    10,
+    11,
+    3,
+    10,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    2,
+    11,
+    1,
+    11,
+    9,
+    9,
+    11,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    0,
+    9,
+    3,
+    9,
+    11,
+    1,
+    2,
+    9,
+    2,
+    11,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    2,
+    11,
+    8,
+    0,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    3,
+    2,
+    11,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    3,
+    8,
+    2,
+    8,
+    10,
+    10,
+    8,
+    9,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    9,
+    10,
+    2,
+    0,
+    9,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    2,
+    3,
+    8,
+    2,
+    8,
+    10,
+    0,
+    1,
+    8,
+    1,
+    10,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    10,
+    2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    3,
+    8,
+    9,
+    1,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    9,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    0,
+    3,
+    8,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1
+  ]);
+
+  // node_modules/three/examples/jsm/libs/stats.module.js
+  var Stats = function() {
+    var mode = 0;
+    var container = document.createElement("div");
+    container.style.cssText = "position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000";
+    container.addEventListener("click", function(event) {
+      event.preventDefault();
+      showPanel(++mode % container.children.length);
+    }, false);
+    function addPanel(panel) {
+      container.appendChild(panel.dom);
+      return panel;
+    }
+    function showPanel(id) {
+      for (var i = 0; i < container.children.length; i++) {
+        container.children[i].style.display = i === id ? "block" : "none";
+      }
+      mode = id;
+    }
+    var beginTime = (performance || Date).now(), prevTime = beginTime, frames = 0;
+    var fpsPanel = addPanel(new Stats.Panel("FPS", "#0ff", "#002"));
+    var msPanel = addPanel(new Stats.Panel("MS", "#0f0", "#020"));
+    if (self.performance && self.performance.memory) {
+      var memPanel = addPanel(new Stats.Panel("MB", "#f08", "#201"));
+    }
+    showPanel(0);
+    return {
+      REVISION: 16,
+      dom: container,
+      addPanel,
+      showPanel,
+      begin: function() {
+        beginTime = (performance || Date).now();
+      },
+      end: function() {
+        frames++;
+        var time = (performance || Date).now();
+        msPanel.update(time - beginTime, 200);
+        if (time >= prevTime + 1e3) {
+          fpsPanel.update(frames * 1e3 / (time - prevTime), 100);
+          prevTime = time;
+          frames = 0;
+          if (memPanel) {
+            var memory = performance.memory;
+            memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
+          }
+        }
+        return time;
+      },
+      update: function() {
+        beginTime = this.end();
+      },
+      domElement: container,
+      setMode: showPanel
+    };
+  };
+  Stats.Panel = function(name, fg, bg) {
+    var min = Infinity, max2 = 0, round = Math.round;
+    var PR = round(window.devicePixelRatio || 1);
+    var WIDTH = 80 * PR, HEIGHT = 48 * PR, TEXT_X = 3 * PR, TEXT_Y = 2 * PR, GRAPH_X = 3 * PR, GRAPH_Y = 15 * PR, GRAPH_WIDTH = 74 * PR, GRAPH_HEIGHT = 30 * PR;
+    var canvas2 = document.createElement("canvas");
+    canvas2.width = WIDTH;
+    canvas2.height = HEIGHT;
+    canvas2.style.cssText = "width:80px;height:48px";
+    var context = canvas2.getContext("2d");
+    context.font = "bold " + 9 * PR + "px Helvetica,Arial,sans-serif";
+    context.textBaseline = "top";
+    context.fillStyle = bg;
+    context.fillRect(0, 0, WIDTH, HEIGHT);
+    context.fillStyle = fg;
+    context.fillText(name, TEXT_X, TEXT_Y);
+    context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+    context.fillStyle = bg;
+    context.globalAlpha = 0.9;
+    context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+    return {
+      dom: canvas2,
+      update: function(value, maxValue) {
+        min = Math.min(min, value);
+        max2 = Math.max(max2, value);
+        context.fillStyle = bg;
+        context.globalAlpha = 1;
+        context.fillRect(0, 0, WIDTH, GRAPH_Y);
+        context.fillStyle = fg;
+        context.fillText(round(value) + " " + name + " (" + round(min) + "-" + round(max2) + ")", TEXT_X, TEXT_Y);
+        context.drawImage(canvas2, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
+        context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
+        context.fillStyle = bg;
+        context.globalAlpha = 0.9;
+        context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - value / maxValue) * GRAPH_HEIGHT));
+      }
+    };
+  };
+  var stats_module_default = Stats;
+
   // index.js
+  var import_simplex_noise = __toModule(require_simplex_noise());
+  window.THREE = three_module_exports;
   function map(v, a, b, c, d) {
     return (v - a) / (b - a) * (d - c) + c;
   }
@@ -49190,68 +54700,199 @@
     v = av < z ? z : av;
     return s * map(v, z, 1, 0, 1);
   }
-  var Tween = class {
-    constructor(duration, func) {
-      this.duration = duration;
-      this.time = 0;
-      this.func = func.bind(this);
-    }
-    update(deltaSecs) {
-      this.time += deltaSecs;
-      this.func(Math.min(1, this.time / this.duration));
-    }
-    reset() {
-      this.time = 0;
-    }
-  };
   var collisionFlags = {
     dynamic: 0,
     static: 1,
     kinematic: 2,
     ghost: 4
   };
+  var loadTexture = (() => {
+    const textureLoader = new three_module_exports.TextureLoader();
+    return (texture) => {
+      return textureLoader.load(texture);
+    };
+  })();
   var loadModel = (() => {
     const gltfLoader = new GLTFLoader();
     return (model) => {
       return new Promise((resolve) => {
         gltfLoader.load(model, (gltf) => {
-          resolve(gltf.scene.getObjectByProperty("type", "Mesh"));
+          if (gltf.animations?.length) {
+            const mixer = new three_module_exports.AnimationMixer(gltf.scene);
+            gltf.scene.userData.mixer = mixer;
+            gltf.scene.userData.action = mixer.clipAction(gltf.animations[0]);
+          }
+          resolve(gltf.scene);
         });
       });
     };
   })();
+  var Clip = class {
+    constructor(startTime, endTime, action, mixer) {
+      this.enabled = false;
+      this.startTime = startTime;
+      this.endTime = endTime;
+      this.action = action;
+      this.mixer = mixer;
+    }
+    update(deltaSecs) {
+      if (!this.enabled)
+        return;
+      if (this.action.time >= this.endTime) {
+        this.stop();
+        return;
+      }
+      this.mixer.update(deltaSecs);
+    }
+    start() {
+      this.action.time = this.startTime;
+      this.action.play();
+      this.enabled = true;
+    }
+    stop() {
+      this.enabled = false;
+    }
+  };
+  var stats = new stats_module_default();
+  document.body.append(stats.dom);
   var MainScene = class extends Scene3D {
     async preload() {
       this.assets = {
+        textures: {
+          grain: loadTexture("grain.png")
+        },
         models: {
-          sphere: await loadModel("sphere.glb")
+          sphere: await loadModel("sphere.glb"),
+          tree: await loadModel("tree.glb")
         }
       };
     }
     async init() {
-      this.state = Object.preventExtensions({
-        player: null
+      this.state = window.state = Object.preventExtensions({
+        player: null,
+        sphere: null,
+        tree: null,
+        marchingCubes: null,
+        spheres: [],
+        heightMap: null,
+        directionalLight: null,
+        clips: []
       });
     }
-    makePlayer(color) {
+    makePlayer() {
+      const playerY = -3;
       const player = new three_module_exports.Object3D();
-      player.position.y = 1;
-      const box = this.make.box({ height: 1.5 }, { standard: { metalness: 0.8, roughness: 0.4, color, emissive: color, emissiveIntensity: 0.5 } });
-      box.add(this.make.sphere({ radius: 0.1, y: 0.8, z: 0.5 }));
-      player.userData.box = box;
-      player.add(box);
-      this.physics.addExisting(player, { shape: "capsule", radius: 0.5, height: 0.4 });
-      player.body.setAngularFactor(0, 0, 0);
-      player.body.setDamping(0.95, 1);
+      player.position.y = playerY;
+      const sphere = this.assets.models.sphere.getObjectByProperty("type", "Mesh");
+      sphere.castShadow = true;
+      sphere.receiveShadow = true;
+      sphere.material.metalness = 0.9;
+      sphere.material.roughness = 0;
+      sphere.material.color.setStyle("white");
+      sphere.position.y = playerY;
+      this.physics.addExisting(sphere, {
+        collisionFlags: collisionFlags.kinematic,
+        shape: "concave",
+        collisionGroup: 8,
+        collisionMask: 8
+      });
+      this.scene.add(sphere);
+      this.state.sphere = sphere;
+      this.state.sphere.body.setFriction(0);
+      this.physics.addExisting(player, { shape: "sphere", radius: 1 });
+      player.body.setDamping(0.9, 0.3);
+      this.state.marchingCubes = new MarchingCubes(16, new three_module_exports.MeshStandardMaterial({
+        color: "white",
+        roughness: 0,
+        metalness: 1
+      }), false, false);
+      this.state.marchingCubes.castShadow = false;
+      this.state.marchingCubes.receiveShadow = false;
+      this.state.marchingCubes.scale.multiplyScalar(1.3);
+      sphere.add(this.state.marchingCubes);
       this.scene.add(player);
+      const n = 1;
+      const xn = n;
+      const yn = n;
+      const zn = n;
+      for (let x = 0; x < xn; x++) {
+        for (let y = 0; y < yn; y++) {
+          for (let z = 0; z < zn; z++) {
+            const sphere2 = this.physics.add.sphere({
+              radius: 0.19,
+              x: (x / xn - 0.5) * 0.2 + 0.1,
+              y: (y / yn - 0.5) * 0.2 + 0.1 + playerY,
+              z: (z / zn - 0.5) * 0.2 + 0.1,
+              widthSegments: 4,
+              heightSegments: 4,
+              mass: 1e-4,
+              collisionGroup: 8,
+              collisionMask: 8
+            }, { lambert: { color: "red", visible: false } });
+            sphere2.body.setDamping(0.9, 0.9);
+            sphere2.body.setFriction(0);
+            sphere2.body.setRestitution(0);
+            this.state.spheres.push(sphere2);
+          }
+        }
+      }
       return player;
     }
     async create() {
-      await this.warpSpeed();
-      this.physics.add.box({ width: 3, height: 0.5, depth: 3, collisionFlags: collisionFlags.static });
-      this.physics.add.box({ x: 1, y: 0.25, width: 3, height: 0.5, depth: 3, collisionFlags: collisionFlags.static });
-      this.state.player = this.makePlayer("red");
-      this.state.player.add(this.camera);
+      window.scene = this;
+      const warp = await this.warpSpeed("-ground", "-orbitControls");
+      this.state.directionalLight = warp.lights.directionalLight;
+      this.physics.add.box({ collisionFlags: collisionFlags.static, width: 100, height: 10, z: -50, y: -5 }, { lambert: { visible: false } });
+      this.physics.add.box({ collisionFlags: collisionFlags.static, width: 100, height: 10, z: 50, y: -5 }, { lambert: { visible: false } });
+      this.physics.add.box({ collisionFlags: collisionFlags.static, depth: 100, height: 10, x: -50, y: -5 }, { lambert: { visible: false } });
+      this.physics.add.box({ collisionFlags: collisionFlags.static, depth: 100, height: 10, x: 50, y: -5 }, { lambert: { visible: false } });
+      const tree = this.assets.models.tree;
+      const treeMesh = tree.getObjectByProperty("type", "SkinnedMesh");
+      treeMesh.pose();
+      treeMesh.castShadow = true;
+      tree.scale.setScalar(1.5);
+      tree.position.y = -6.5;
+      window.tree = tree;
+      this.state.tree = tree;
+      this.scene.add(tree);
+      tree.userData.action.play();
+      tree.userData.mixer.update(0);
+      this.state.clips.push(new Clip(0, 1.5, tree.userData.action, tree.userData.mixer));
+      this.state.clips.push(new Clip(1.5, 2, tree.userData.action, tree.userData.mixer));
+      this.state.clips.push(new Clip(2, 2.5, tree.userData.action, tree.userData.mixer));
+      this.state.clips.push(new Clip(2.5, 3.3, tree.userData.action, tree.userData.mixer));
+      this.physics.add.cylinder({ collisionFlags: collisionFlags.static, y: -6, z: 13.5, height: 5, radiusTop: 0.2, radiusBottom: 0.2 }, { lambert: { visible: false } });
+      this.state.player = this.makePlayer();
+      const noise = new import_simplex_noise.default("seeds");
+      const canvas2 = document.createElement("canvas");
+      canvas2.width = canvas2.height = 64;
+      Object.assign(canvas2.style, { position: "absolute", top: 0, zIndex: 100, right: 0 });
+      const ctx = canvas2.getContext("2d");
+      const data = ctx.getImageData(0, 0, canvas2.width, canvas2.height);
+      const scale = 1 / 16;
+      for (let x = 0; x < canvas2.width; x++) {
+        for (let y = 0; y < canvas2.height; y++) {
+          const v = (noise.noise2D(x * scale, y * scale) + 1) / 2 * 64;
+          data.data[y * canvas2.width * 4 + x * 4 + 0] = v;
+          data.data[y * canvas2.width * 4 + x * 4 + 1] = v;
+          data.data[y * canvas2.width * 4 + x * 4 + 2] = v;
+          data.data[y * canvas2.width * 4 + x * 4 + 3] = 255;
+        }
+      }
+      ctx.putImageData(data, 0, 0);
+      document.body.append(canvas2);
+      this.state.heightMap = this.heightMap.add(new three_module_exports.CanvasTexture(canvas2));
+      this.state.heightMap.scale.multiplyScalar(10);
+      this.state.heightMap.castShadow = false;
+      this.state.heightMap.receiveShadow = true;
+      this.state.heightMap.material.wireframe = false;
+      this.state.heightMap.material.color.setHex(15916977);
+      this.state.heightMap.material.map = this.assets.textures.grain;
+      this.state.heightMap.material.bumpMap = this.assets.textures.grain;
+      this.state.heightMap.material.map.wrapS = this.state.heightMap.material.map.wrapT = three_module_exports.RepeatWrapping;
+      this.state.heightMap.material.map.repeat.setScalar(20);
+      this.state.heightMap.position.y = -10;
+      this.physics.add.existing(this.state.heightMap, { collisionFlags: collisionFlags.static });
     }
     getGamepad(i) {
       const gamepads = navigator.getGamepads();
@@ -49259,39 +54900,56 @@
         return gamepads[i];
     }
     update = (() => {
-      const vec = new three_module_exports.Vector3();
-      const quat = new three_module_exports.Quaternion();
-      const forward = new three_module_exports.Vector3(0, 0, 1);
-      const tween = new Tween(0.1, function(t) {
-        if (!this.a || !this.b)
-          return;
-        this.a.slerp(this.b, t);
-      });
       let aWasUp = true;
+      const vec = new three_module_exports.Vector3();
       return (time, delta) => {
+        stats.update();
         const deltaSecs = delta / 1e3;
+        for (const clip of this.state.clips) {
+          clip.update(deltaSecs);
+        }
+        this.state.sphere.position.copy(this.state.player.position);
+        this.state.sphere.quaternion.copy(this.state.player.quaternion);
+        this.state.sphere.body.needUpdate = true;
+        this.camera.position.copy(this.state.player.position);
+        vec.set(0, 10, 10);
+        this.camera.position.add(vec);
+        this.camera.lookAt(this.state.player.position);
+        this.state.directionalLight.target = this.state.player;
+        this.state.directionalLight.position.copy(this.state.player.position);
+        vec.set(100, 50, 50);
+        this.state.directionalLight.position.add(vec);
         const gamepad = this.getGamepad(0);
         if (gamepad) {
           const ax = deadzone(gamepad.axes[0]);
           const ay = deadzone(gamepad.axes[1]);
-          if (ax || ay) {
-            vec.set(ax, 0, ay);
-            vec.normalize();
-            tween.reset();
-            tween.a = this.state.player.userData.box.quaternion;
-            tween.b = quat.setFromUnitVectors(forward, vec);
-          }
-          this.state.player.body.applyCentralForce(20 * ax, 0, 20 * ay);
+          const scale = 20;
+          this.state.player.body.applyCentralForce(scale * ax, 0, scale * ay);
           if (aWasUp && gamepad.buttons[0].pressed) {
             this.state.player.body.applyCentralImpulse(0, 6, 0);
           }
           aWasUp = !gamepad.buttons[0].pressed;
         }
-        tween.update(deltaSecs);
+        this.state.marchingCubes.reset();
+        for (const sphere of this.state.spheres) {
+          vec.copy(sphere.position);
+          this.state.marchingCubes.worldToLocal(vec);
+          vec.addScalar(1.1);
+          vec.multiplyScalar(0.45);
+          this.state.marchingCubes.addBall(vec.x, vec.y, vec.z, 0.5, 12);
+        }
+        if (!this.scene.environment && time > 0.1) {
+          const pmremGen = new three_module_exports.PMREMGenerator(this.renderer);
+          this.state.marchingCubes.visible = this.state.sphere.visible = false;
+          this.scene.environment = pmremGen.fromScene(this.scene, 0, 0.1, 2e3).texture;
+          this.scene.environment.encoding = three_module_exports.LinearEncoding;
+          this.state.marchingCubes.visible = this.state.sphere.visible = true;
+        }
       };
     })();
   };
   PhysicsLoader("lib", () => new Project({
+    antialias: true,
     gravity: { x: 0, y: -9.8, z: 0 },
     scenes: [MainScene]
   }));
