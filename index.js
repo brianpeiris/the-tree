@@ -4,8 +4,6 @@ import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Stats from "three/examples/jsm/libs/stats.module";
 import SimplexNoise from "simplex-noise";
 import gsap from "gsap";
-window.gsap = gsap;
-window.THREE = THREE;
 
 function map(v, a, b, c, d) {
   return ((v - a) / (b - a)) * (d - c) + c;
@@ -16,6 +14,10 @@ function deadzone(v, z = 0.1) {
   const av = Math.abs(v);
   v = av < z ? z : av;
   return s * map(v, z, 1, 0, 1);
+}
+
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
 }
 
 const collisionFlags = {
@@ -54,7 +56,7 @@ function getGamepad(i) {
 }
 
 const stats = new Stats();
-document.body.append(stats.dom);
+//document.body.append(stats.dom);
 
 class MainScene extends Scene3D {
   async preload() {
@@ -71,7 +73,7 @@ class MainScene extends Scene3D {
   }
 
   async init() {
-    this.state = window.state = Object.preventExtensions({
+    this.state = Object.preventExtensions({
       player: null,
       sphere: null,
       tree: null,
@@ -86,6 +88,8 @@ class MainScene extends Scene3D {
       gameOver: false,
       treePhase: 0,
       children: [],
+      storm: null,
+      stormEnabled: true,
     });
     //this.physics.debug.enable();
   }
@@ -130,7 +134,7 @@ class MainScene extends Scene3D {
     this.state.sphere = sphere;
     this.state.sphere.body.setFriction(0);
 
-    this.physics.addExisting(player, { shape: "sphere", radius: 1 });
+    this.physics.addExisting(player, { shape: "sphere", radius: 1, collisionFlags: collisionFlags.dynamic });
     player.body.setDamping(0.9, 0.3);
 
     this.state.marchingCubes = new MarchingCubes(
@@ -176,8 +180,6 @@ class MainScene extends Scene3D {
   }
 
   async create() {
-    window.scene = this;
-
     const warp = await this.warpSpeed("-ground", "orbitControls");
     this.state.directionalLight = warp.lights.directionalLight;
 
@@ -244,7 +246,6 @@ class MainScene extends Scene3D {
     }
     ctx.putImageData(data, 0, 0);
     this.state.heightMap = this.heightMap.add(new THREE.CanvasTexture(canvas));
-    //this.state.heightMap.material = new THREE.MeshStandardMaterial();
     this.state.heightMap.scale.multiplyScalar(10);
     this.state.heightMap.castShadow = false;
     this.state.heightMap.receiveShadow = true;
@@ -265,8 +266,8 @@ class MainScene extends Scene3D {
       [48, 48],
     ];
     for (let i = 0; i < 4; i++) {
-      const x = Math.floor(centers[i][0] + (Math.random() - 0.5) * 2 * 6);
-      const z = Math.floor(centers[i][1] + (Math.random() - 0.5) * 2 * 6);
+      const x = Math.floor(centers[i][0] + rand(-6, 6));
+      const z = Math.floor(centers[i][1] + rand(-6, 6));
       const y = data.data[z * canvas.width * 4 + x * 4] / 16 - 6;
       const source = this.make.sphere(
         { x: (x - canvas.width / 2) * 1.57 + 0.5, y, z: (z - canvas.width / 2) * 1.57 + 0.5 },
@@ -279,6 +280,18 @@ class MainScene extends Scene3D {
       this.state.sources.push(source);
     }
     this.scene.add(sources);
+
+    this.state.storm = new THREE.Points();
+    this.state.storm.material.size = 1.2;
+    this.state.storm.material.sizeAttenuation = false;
+    this.state.storm.material.color.setStyle('brown');
+    this.state.storm.material.color.offsetHSL(0, -0.3, -0.2);
+    const points = [];
+    for (let i = 0; i < 10000; i++) {
+      points.push(rand(-50, 50), rand(-10, 10), rand(-50, 50));
+    }
+    this.state.storm.geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(points), 3));
+    this.scene.add(this.state.storm);
   }
 
   update = (() => {
@@ -360,7 +373,12 @@ class MainScene extends Scene3D {
         if (!this.state.gameOver) {
           this.state.gameOver = true;
           gsap.to(this.scene.fog, {near: 100, far: 110, duration: 10});
-          gsap.to(this.state.arrow.scale, {x: 0.0001, y: 0.0001, z: 0.001, duration: 0.1});
+          gsap.to(this.state.arrow.scale, {x: 0.0001, y: 0.0001, z: 0.0001, duration: 0.1});
+          this.state.storm.material.transparent = true;
+          gsap.to(this.state.storm.material, {opacity: 0, duration: 0.5}).then(() => {
+            this.state.storm.visible = false;
+            this.state.stormEnabled = false;
+          });
           const childPositions = [
             [-0.7, 1.3, 0.2],
             [-2, 0.8, -0.9],
@@ -373,7 +391,7 @@ class MainScene extends Scene3D {
           ];
           for(let i = 0; i < childPositions.length; i++) {
             const [x, y, z] = childPositions[i];
-            setTimeout(() => this.addChild(i, x, y, z), 1000 + Math.random() * 2000);
+            setTimeout(() => this.addChild(i, x, y, z), rand(1, 2) * 1000);
           }
         }
       }
@@ -406,6 +424,7 @@ class MainScene extends Scene3D {
           this.state.tree.visible =
           this.state.marchingCubes.visible =
           this.state.sphere.visible =
+          this.state.storm.visible =
             false;
 
         this.scene.environment = pmremGen.fromScene(this.scene, 0, 0.1, 2000).texture;
@@ -415,10 +434,36 @@ class MainScene extends Scene3D {
           this.state.tree.visible =
           this.state.marchingCubes.visible =
           this.state.sphere.visible =
+          this.state.storm.visible =
             true;
         for (const source of this.state.sources) {
           source.visible = true;
         }
+      }
+
+      if (this.state.stormEnabled) {
+        const pos = this.state.storm.geometry.attributes.position;
+        for (let i = 0; i < pos.array.length; i += 3) {
+          pos.array[i] += 0.5;
+          pos.array[i + 1] += rand(-0.1, 0.1);
+          pos.array[i + 2] += rand(-0.1, 0.1);
+          if (pos.array[i] > 50) {
+            pos.array[i] = -50;
+          }
+          if (pos.array[i + 1] > 10) {
+            pos.array[i + 1] = -10;
+          }
+          if (pos.array[i + 1] < -10) {
+            pos.array[i + 1] = 10;
+          }
+          if (pos.array[i + 2] > 50) {
+            pos.array[i + 2] = -50;
+          }
+          if (pos.array[i + 2] < -50) {
+            pos.array[i + 2] = 50;
+          }
+        }
+        pos.needsUpdate = true;
       }
     };
   })();
