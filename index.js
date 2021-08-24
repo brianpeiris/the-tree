@@ -90,14 +90,14 @@ class MainScene extends Scene3D {
     //this.physics.debug.enable();
   }
 
-  addChild(x, y, z) {
+  addChild(i, x, y, z) {
     const childMesh = this.assets.models.sphere.getObjectByProperty("type", "Mesh").clone();
     childMesh.castShadow = childMesh.receiveShadow = true;
     childMesh.material = childMesh.material.clone();
     childMesh.material.metalness = 0.9;
     childMesh.material.roughness = 0;
     childMesh.position.set(x, y, z);
-    childMesh.material.color.setHSL(Math.random(), 1, 0.5);
+    childMesh.material.color.setHSL(i / 8, 1, 0.5);
     childMesh.scale.setScalar(0.001);
     this.scene.add(childMesh);
     gsap.to(childMesh.scale, {x:0.3, y: 0.3, z: 0.3}).then(() => {
@@ -283,6 +283,7 @@ class MainScene extends Scene3D {
 
   update = (() => {
     const vec = new THREE.Vector3();
+    const up = new THREE.Vector3(0, 1, 0);
     let lastSphereChange = 0;
     return (time, delta) => {
       stats.update();
@@ -370,9 +371,9 @@ class MainScene extends Scene3D {
             [1.06, -1.47, -0.86],
             [-1.53, -2.29, -0.6],
           ];
-          for (const childPosition of childPositions) {
-            const [x, y, z] = childPosition;
-            setTimeout(() => this.addChild(x, y, z), 500 + Math.random() * 1000);
+          for(let i = 0; i < childPositions.length; i++) {
+            const [x, y, z] = childPositions[i];
+            setTimeout(() => this.addChild(i, x, y, z), 1000 + Math.random() * 2000);
           }
         }
       }
@@ -382,6 +383,7 @@ class MainScene extends Scene3D {
         vec.sub(child.position);
         vec.normalize();
         vec.multiplyScalar(0.15);
+        vec.applyAxisAngle(up, 15 * Math.PI / 180);
         child.body.applyCentralForce(vec.x, 0, vec.z);
       }
 
