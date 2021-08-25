@@ -72,6 +72,7 @@ class MainScene extends Scene3D {
     this.assets = {
       textures: {
         grain: loadTexture("grain.png"),
+        cube: loadTexture("cube.png"),
       },
       models: {
         sphere: await loadModel("sphere.glb"),
@@ -186,6 +187,14 @@ class MainScene extends Scene3D {
   }
 
   async create() {
+    this.scene.environment = this.assets.textures.cube;
+    this.scene.environment.encoding = THREE.LinearEncoding;
+    this.scene.environment.mapping = THREE.CubeUVReflectionMapping;
+    this.scene.environment.magFilter = THREE.NearestFilter;
+    this.scene.environment.minFilter = THREE.NearestFilter;
+    this.scene.environment.generateMipmaps = false;
+
+
     const warp = await this.warpSpeed("-ground", "-orbitControls");
     this.state.directionalLight = warp.lights.directionalLight;
 
@@ -194,7 +203,7 @@ class MainScene extends Scene3D {
     // this.camera.position.set(0, 150, 0);
     // this.camera.lookAt(this.scene.position);
 
-    //this.scene.fog = new THREE.Fog(0xedf5ff, 90, 110);
+    this.scene.fog = new THREE.Fog(0xedf5ff, 30, 40);
     window.scene = this;
 
     this.physics.add.box(
@@ -278,6 +287,7 @@ class MainScene extends Scene3D {
         { x: (x - canvas.width / 2) * 1.57 + 0.5, y, z: (z - canvas.width / 2) * 1.57 + 0.5 },
         { standard: { roughness: 0, metalness: 1 } }
       );
+      source.frustumCulled = false;
       if (i !== 0) {
         source.scale.setScalar(0.001);
       }
@@ -314,8 +324,8 @@ class MainScene extends Scene3D {
       this.state.sphere.body.needUpdate = true;
 
       this.camera.position.copy(playerPosition);
-      vec.set(0, 3, 15);
-      vec.multiplyScalar(5);
+      vec.set(0, 6, 15);
+      //vec.multiplyScalar(5);
       this.camera.position.add(vec);
       this.camera.lookAt(playerPosition);
 
@@ -431,11 +441,25 @@ class MainScene extends Scene3D {
           obj.visible = false;
         }
 
-        //const pmremGen = new THREE.PMREMGenerator(this.renderer);
-        //this.scene.environment = pmremGen.fromScene(this.scene, 0, 0.1, 2000).texture;
-        //this.scene.environment.encoding = THREE.LinearEncoding;
-        //const plane = this.add.plane({}, {basic: {map: this.scene.environment}});
-        //plane.scale.setScalar(4);
+        /*
+        const renderer = new THREE.WebGLRenderer();
+        const pmremGen = new THREE.PMREMGenerator(renderer);
+        const renderTarget = pmremGen.fromScene(this.scene, 0, 0.1, 2000);
+        const buff = new Uint8ClampedArray(renderTarget.width * 4 * renderTarget.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = renderTarget.width;
+        canvas.height = renderTarget.height;
+        const ctx = canvas.getContext("2d");
+        renderer.readRenderTargetPixels(renderTarget, 0, 0, renderTarget.width, renderTarget.height, buff, 0);
+        const imageData = new ImageData(buff, renderTarget.width);
+        ctx.putImageData(imageData, 0, 0 );
+        document.body.append(canvas);
+        this.scene.environment = new THREE.CanvasTexture(canvas);
+        this.scene.environment.mapping = THREE.CubeUVReflectionMapping;
+        this.scene.environment.encoding = THREE.LinearEncoding;
+        const plane = this.add.plane({}, {basic: {map: this.scene.environment}});
+        plane.scale.setScalar(4);
+        //*/
 
         for (const obj of objectsToToggle) {
           obj.visible = true;
@@ -472,7 +496,7 @@ class MainScene extends Scene3D {
 }
 
 const renderer = window.renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
-//renderer.renderQuilt = true;
+renderer.renderQuilt = true;
 renderer.render2d = queryParams.has("2d");
 renderer.setSize = (width, height) => {
   return renderer.webglRenderer.setSize(width, height);

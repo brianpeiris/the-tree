@@ -59252,7 +59252,7 @@
         this.viewCone = viewCone;
       });
       getIdealFov().then((fov2) => {
-        this.fov = fov2;
+        this.fov = 50;
         this.cameras.forEach((c) => {
           c.fov = this.fov;
           c.updateProjectionMatrix();
@@ -59436,7 +59436,7 @@
       }
       this.debug2dCamera = new THREE.PerspectiveCamera();
       getIdealFov().then((fov2) => {
-        this.debug2dCamera.fov = fov2;
+        this.debug2dCamera.fov = 50;
         this.debug2dCamera.updateProjectionMatrix();
       });
     }
@@ -59534,7 +59534,8 @@
     async preload() {
       this.assets = {
         textures: {
-          grain: loadTexture("grain.png")
+          grain: loadTexture("grain.png"),
+          cube: loadTexture("cube.png")
         },
         models: {
           sphere: await loadModel("sphere.glb"),
@@ -59630,8 +59631,15 @@
       this.state.spheres.push(sphere);
     }
     async create() {
+      this.scene.environment = this.assets.textures.cube;
+      this.scene.environment.encoding = three_module_exports.LinearEncoding;
+      this.scene.environment.mapping = three_module_exports.CubeUVReflectionMapping;
+      this.scene.environment.magFilter = three_module_exports.NearestFilter;
+      this.scene.environment.minFilter = three_module_exports.NearestFilter;
+      this.scene.environment.generateMipmaps = false;
       const warp = await this.warpSpeed("-ground", "-orbitControls");
       this.state.directionalLight = warp.lights.directionalLight;
+      this.scene.fog = new three_module_exports.Fog(15595007, 30, 40);
       window.scene = this;
       this.physics.add.box({ collisionFlags: collisionFlags.static, width: 100, height: 10, z: -50, y: -5 }, { lambert: { visible: false } });
       this.physics.add.box({ collisionFlags: collisionFlags.static, width: 100, height: 10, z: 50, y: -5 }, { lambert: { visible: false } });
@@ -59688,6 +59696,7 @@
         const z = Math.floor(centers[i][1] + rand(-6, 6));
         const y = data.data[z * canvas2.width * 4 + x * 4] / 16 - 6;
         const source = this.make.sphere({ x: (x - canvas2.width / 2) * 1.57 + 0.5, y, z: (z - canvas2.width / 2) * 1.57 + 0.5 }, { standard: { roughness: 0, metalness: 1 } });
+        source.frustumCulled = false;
         if (i !== 0) {
           source.scale.setScalar(1e-3);
         }
@@ -59718,8 +59727,7 @@
         this.state.sphere.quaternion.copy(this.state.player.quaternion);
         this.state.sphere.body.needUpdate = true;
         this.camera.position.copy(playerPosition);
-        vec.set(0, 3, 15);
-        vec.multiplyScalar(5);
+        vec.set(0, 6, 15);
         this.camera.position.add(vec);
         this.camera.lookAt(playerPosition);
         const currentSource = this.state.sources[this.state.currentSourceIndex];
@@ -59855,6 +59863,7 @@
     })();
   };
   var renderer = window.renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
+  renderer.renderQuilt = true;
   renderer.render2d = queryParams.has("2d");
   renderer.setSize = (width, height) => {
     return renderer.webglRenderer.setSize(width, height);
