@@ -58,6 +58,11 @@ function getGamepad(i) {
 const stats = new Stats();
 //document.body.append(stats.dom);
 
+const TREE_ANIMATION_DURATION = 3.32;
+const NUM_SOURCES = 4;
+const NUM_SPHERES_PER_SOURCE = 20;
+const TOTAL_SPHERES = NUM_SPHERES_PER_SOURCE * NUM_SOURCES;
+
 class MainScene extends Scene3D {
   async preload() {
     this.assets = {
@@ -80,7 +85,6 @@ class MainScene extends Scene3D {
       arrow: null,
       marchingCubes: null,
       spheres: [],
-      heightMap: null,
       directionalLight: null,
       sources: [],
       currentSourceIndex: 0,
@@ -147,8 +151,6 @@ class MainScene extends Scene3D {
       false,
       false
     );
-    this.state.marchingCubes.castShadow = false;
-    this.state.marchingCubes.receiveShadow = false;
     this.state.marchingCubes.scale.multiplyScalar(1.3);
     sphere.add(this.state.marchingCubes);
 
@@ -180,7 +182,7 @@ class MainScene extends Scene3D {
   }
 
   async create() {
-    const warp = await this.warpSpeed("-ground", "orbitControls");
+    const warp = await this.warpSpeed("-ground", "-orbitControls");
     this.state.directionalLight = warp.lights.directionalLight;
 
     // this.camera.position.set(1, 1, 1).setScalar(100);
@@ -215,7 +217,7 @@ class MainScene extends Scene3D {
     this.state.tree = tree;
     this.scene.add(tree);
     tree.userData.action.play();
-    // tree.userData.action.time = 3.32;
+    // tree.userData.action.time = TREE_ANIMATION_DURATION;
     tree.userData.mixer.update(0);
     this.physics.add.cylinder(
       { collisionFlags: collisionFlags.static, y: -3, height: 5, radiusTop: 0.2, radiusBottom: 0.2 },
@@ -223,6 +225,7 @@ class MainScene extends Scene3D {
     );
 
     this.state.player = this.makePlayer();
+    this.state.directionalLight.target = this.state.player;
 
     this.state.arrow = this.assets.models.arrow;
     this.scene.add(this.state.arrow);
@@ -245,27 +248,24 @@ class MainScene extends Scene3D {
       }
     }
     ctx.putImageData(data, 0, 0);
-    this.state.heightMap = this.heightMap.add(new THREE.CanvasTexture(canvas));
-    this.state.heightMap.scale.multiplyScalar(10);
-    this.state.heightMap.castShadow = false;
-    this.state.heightMap.receiveShadow = true;
-    this.state.heightMap.material.wireframe = false;
-    this.state.heightMap.material.color.setHex(0xf2dfb1);
-    this.state.heightMap.material.map = this.assets.textures.grain;
-    this.state.heightMap.material.bumpMap = this.assets.textures.grain;
-    this.state.heightMap.material.map.wrapS = this.state.heightMap.material.map.wrapT = THREE.RepeatWrapping;
-    this.state.heightMap.material.map.repeat.setScalar(20);
-    this.state.heightMap.position.y = -10;
-    this.physics.add.existing(this.state.heightMap, { collisionFlags: collisionFlags.static });
+    const heightMap = this.heightMap.add(new THREE.CanvasTexture(canvas));
+    heightMap.scale.multiplyScalar(10);
+    heightMap.castShadow = false;
+    heightMap.receiveShadow = true;
+    heightMap.material.color.setHex(0xf2dfb1);
+    heightMap.material.map = this.assets.textures.grain;
+    heightMap.material.map.wrapS = heightMap.material.map.wrapT = THREE.RepeatWrapping;
+    heightMap.material.map.repeat.setScalar(20);
+    heightMap.position.y = -10;
+    this.physics.add.existing(heightMap, { collisionFlags: collisionFlags.static });
 
-    const sources = new THREE.Group();
     const centers = [
       [16, 16],
       [48, 16],
       [16, 48],
       [48, 48],
     ];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < NUM_SOURCES; i++) {
       const x = Math.floor(centers[i][0] + rand(-6, 6));
       const z = Math.floor(centers[i][1] + rand(-6, 6));
       const y = data.data[z * canvas.width * 4 + x * 4] / 16 - 6;
@@ -276,16 +276,15 @@ class MainScene extends Scene3D {
       if (i !== 0) {
         source.scale.setScalar(0.001);
       }
-      sources.add(source);
+      this.scene.add(source);
       this.state.sources.push(source);
     }
-    this.scene.add(sources);
 
     this.state.storm = new THREE.Points();
-    this.state.storm.material.size = 1.2;
+    this.state.storm.material.size = 1.5;
     this.state.storm.material.sizeAttenuation = false;
     this.state.storm.material.color.setStyle('brown');
-    this.state.storm.material.color.offsetHSL(0, -0.3, -0.2);
+    this.state.storm.material.color.offsetHSL(0, -0.3, -0.1);
     const points = [];
     for (let i = 0; i < 10000; i++) {
       points.push(rand(-50, 50), rand(-10, 10), rand(-50, 50));
@@ -303,25 +302,27 @@ class MainScene extends Scene3D {
 
       const deltaSecs = delta / 1000;
 
-      this.state.sphere.position.copy(this.state.player.position);
+      const playerPosition = this.state.player.position;
+
+      this.state.sphere.position.copy(playerPosition);
       this.state.sphere.quaternion.copy(this.state.player.quaternion);
       this.state.sphere.body.needUpdate = true;
 
-      this.camera.position.copy(this.state.player.position);
+      this.camera.position.copy(playerPosition);
       vec.set(0, 6, 15);
       this.camera.position.add(vec);
-      this.camera.lookAt(this.state.player.position);
+      this.camera.lookAt(playerPosition);
 
-      this.state.arrow.position.copy(this.state.player.position);
-      this.state.arrow.position.y += 2;
       const currentSource = this.state.sources[this.state.currentSourceIndex];
+
+      this.state.arrow.position.copy(playerPosition);
+      this.state.arrow.position.y += 2;
       const destination = this.state.collecting ? currentSource.position : this.state.tree.position;
       this.state.arrow.lookAt(destination);
-      const distanceToDestination = this.state.player.position.distanceTo(destination);
+      const distanceToDestination = playerPosition.distanceTo(destination);
       this.state.arrow.children[0].material.opacity = map(distanceToDestination, 4, 32, 0, 0.5);
 
-      this.state.directionalLight.target = this.state.player;
-      this.state.directionalLight.position.copy(this.state.player.position);
+      this.state.directionalLight.position.copy(playerPosition);
       vec.set(100, 50, 50);
       this.state.directionalLight.position.add(vec);
 
@@ -332,34 +333,30 @@ class MainScene extends Scene3D {
         const scale = 20;
         this.state.player.body.applyCentralForce(scale * ax, 0, scale * ay);
 
-        if (gamepad.buttons[0].pressed && distanceToDestination < 6) {
-          const numSpheres = this.state.spheres.length;
-          if (time - lastSphereChange > 0.1) {
-            if (this.state.collecting) {
-              this.addSphere();
-              const s = Math.max(0.00001, 1 - numSpheres / 20);
-              gsap.to(currentSource.scale, { x: s, y: s, z: s, duration: 0.2 });
-              if (numSpheres === 19) {
-                currentSource.visible = false;
-                this.state.collecting = false;
-                gsap.fromTo(this.state.arrow.scale, {x: 0.0001, y: 0.0001, z: 0.0001}, {x: 1, y: 1, z: 1, duration: 0.5});
-              }
-              lastSphereChange = time;
-            } else {
+        if (gamepad.buttons[0].pressed && distanceToDestination < 6 && time - lastSphereChange > 0.1) {
+          if (this.state.collecting) {
+            this.addSphere();
+            const numSpheres = this.state.spheres.length;
+            const sourceScale = Math.max(0.00001, 1 - numSpheres / NUM_SPHERES_PER_SOURCE);
+            gsap.to(currentSource.scale, { x: sourceScale, y: sourceScale, z: sourceScale, duration: 0.2 });
+            if (numSpheres === NUM_SPHERES_PER_SOURCE) {
+              currentSource.visible = false;
+              this.state.collecting = false;
+              gsap.fromTo(this.state.arrow.scale, {x: 0.0001, y: 0.0001, z: 0.0001}, {x: 1, y: 1, z: 1, duration: 0.5});
+            }
+            lastSphereChange = time;
+          } else {
+            if (this.state.spheres.length) {
               const sphere = this.state.spheres.pop();
-              if (sphere) {
-                this.physics.destroy(sphere);
-                this.state.treePhase += (1 / 80) * 3.32;
-                lastSphereChange = time;
-              }
-              if (numSpheres === 1) {
-                if (this.state.currentSourceIndex !== 3) {
-                  this.state.currentSourceIndex++;
-                  gsap.to(this.state.sources[this.state.currentSourceIndex].scale, {x: 1, y: 1, z: 1, duration: 0.5});
-                  gsap.fromTo(this.state.arrow.scale, {x: 0.0001, y: 0.0001, z: 0.0001}, {x: 1, y: 1, z: 1, duration: 0.5});
-                  this.state.collecting = true;
-                }
-              }
+              this.physics.destroy(sphere);
+              this.state.treePhase += (1 / TOTAL_SPHERES) * TREE_ANIMATION_DURATION;
+              lastSphereChange = time;
+            } else if (this.state.currentSourceIndex !== NUM_SOURCES - 1) {
+              this.state.currentSourceIndex++;
+              const currentSource = this.state.sources[this.state.currentSourceIndex];
+              gsap.to(currentSource.scale, {x: 1, y: 1, z: 1, duration: 0.5});
+              gsap.fromTo(this.state.arrow.scale, {x: 0.0001, y: 0.0001, z: 0.0001}, {x: 1, y: 1, z: 1, duration: 0.5});
+              this.state.collecting = true;
             }
           }
         }
@@ -369,7 +366,7 @@ class MainScene extends Scene3D {
         this.state.tree.userData.mixer.update(deltaSecs / 2);
       }
 
-      if (Math.abs(this.state.tree.userData.action.time - 3.32) < 0.1) {
+      if (Math.abs(this.state.tree.userData.action.time - TREE_ANIMATION_DURATION) < 0.1) {
         if (!this.state.gameOver) {
           this.state.gameOver = true;
           gsap.to(this.scene.fog, {near: 100, far: 110, duration: 10});
@@ -397,7 +394,7 @@ class MainScene extends Scene3D {
       }
 
       for (const child of this.state.children) {
-        vec.copy(this.state.player.position);
+        vec.copy(playerPosition);
         vec.sub(child.position);
         vec.normalize();
         vec.multiplyScalar(0.15);
@@ -415,29 +412,25 @@ class MainScene extends Scene3D {
       }
 
       if (!this.scene.environment && time > 0.1) {
-        const pmremGen = new THREE.PMREMGenerator(this.renderer);
+        const objectsToToggle = [
+          ...this.state.sources,
+          this.state.arrow,
+          this.state.tree,
+          this.state.marchingCubes,
+          this.state.sphere,
+          this.state.storm,
+        ];
 
-        for (const source of this.state.sources) {
-          source.visible = false;
+        for (const obj of objectsToToggle) {
+          obj.visible = false;
         }
-        this.state.arrow.visible =
-          this.state.tree.visible =
-          this.state.marchingCubes.visible =
-          this.state.sphere.visible =
-          this.state.storm.visible =
-            false;
 
+        const pmremGen = new THREE.PMREMGenerator(this.renderer);
         this.scene.environment = pmremGen.fromScene(this.scene, 0, 0.1, 2000).texture;
         this.scene.environment.encoding = THREE.LinearEncoding;
 
-        this.state.arrow.visible =
-          this.state.tree.visible =
-          this.state.marchingCubes.visible =
-          this.state.sphere.visible =
-          this.state.storm.visible =
-            true;
-        for (const source of this.state.sources) {
-          source.visible = true;
+        for (const obj of objectsToToggle) {
+          obj.visible = true;
         }
       }
 
