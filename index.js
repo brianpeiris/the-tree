@@ -281,7 +281,7 @@ class MainScene extends Scene3D {
     }
 
     this.state.storm = new THREE.Points();
-    this.state.storm.material.size = 1.5;
+    this.state.storm.material.size = 2;
     this.state.storm.material.sizeAttenuation = false;
     this.state.storm.material.color.setStyle('brown');
     this.state.storm.material.color.offsetHSL(0, -0.3, -0.1);
