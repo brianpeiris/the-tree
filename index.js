@@ -1,9 +1,13 @@
+import "./global";
 import { Project, Scene3D, PhysicsLoader, THREE } from "enable3d";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes";
 import Stats from "three/examples/jsm/libs/stats.module";
 import SimplexNoise from "simplex-noise";
 import gsap from "gsap";
+import { Camera, Renderer } from "holoplay";
+
+const queryParams = new URLSearchParams(location.search);
 
 function map(v, a, b, c, d) {
   return ((v - a) / (b - a)) * (d - c) + c;
@@ -56,7 +60,7 @@ function getGamepad(i) {
 }
 
 const stats = new Stats();
-//document.body.append(stats.dom);
+document.body.append(stats.dom);
 
 const TREE_ANIMATION_DURATION = 3.32;
 const NUM_SOURCES = 4;
@@ -78,7 +82,7 @@ class MainScene extends Scene3D {
   }
 
   async init() {
-    this.state = Object.preventExtensions({
+    this.state = window.state = Object.preventExtensions({
       player: null,
       sphere: null,
       tree: null,
@@ -190,7 +194,8 @@ class MainScene extends Scene3D {
     // this.camera.position.set(0, 150, 0);
     // this.camera.lookAt(this.scene.position);
 
-    this.scene.fog = new THREE.Fog(0xedf5ff, 25, 40);
+    //this.scene.fog = new THREE.Fog(0xedf5ff, 90, 110);
+    window.scene = this;
 
     this.physics.add.box(
       { collisionFlags: collisionFlags.static, width: 100, height: 10, z: -50, y: -5 },
@@ -309,7 +314,8 @@ class MainScene extends Scene3D {
       this.state.sphere.body.needUpdate = true;
 
       this.camera.position.copy(playerPosition);
-      vec.set(0, 6, 15);
+      vec.set(0, 3, 15);
+      vec.multiplyScalar(5);
       this.camera.position.add(vec);
       this.camera.lookAt(playerPosition);
 
@@ -425,19 +431,22 @@ class MainScene extends Scene3D {
           obj.visible = false;
         }
 
-        const pmremGen = new THREE.PMREMGenerator(this.renderer);
-        this.scene.environment = pmremGen.fromScene(this.scene, 0, 0.1, 2000).texture;
-        this.scene.environment.encoding = THREE.LinearEncoding;
+        //const pmremGen = new THREE.PMREMGenerator(this.renderer);
+        //this.scene.environment = pmremGen.fromScene(this.scene, 0, 0.1, 2000).texture;
+        //this.scene.environment.encoding = THREE.LinearEncoding;
+        //const plane = this.add.plane({}, {basic: {map: this.scene.environment}});
+        //plane.scale.setScalar(4);
 
         for (const obj of objectsToToggle) {
           obj.visible = true;
         }
+
       }
 
       if (this.state.stormEnabled) {
         const pos = this.state.storm.geometry.attributes.position;
         for (let i = 0; i < pos.array.length; i += 3) {
-          pos.array[i] += 0.5;
+          pos.array[i] += rand(0.4, 0.6);
           pos.array[i + 1] += rand(-0.1, 0.1);
           pos.array[i + 2] += rand(-0.1, 0.1);
           if (pos.array[i] > 50) {
@@ -462,11 +471,44 @@ class MainScene extends Scene3D {
   })();
 }
 
+const renderer = window.renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
+//renderer.renderQuilt = true;
+renderer.render2d = queryParams.has("2d");
+renderer.setSize = (width, height) => {
+  return renderer.webglRenderer.setSize(width, height);
+};
+renderer.setPixelRatio = (ratio) => {
+  return renderer.webglRenderer.setPixelRatio(ratio);
+};
+renderer.setAnimationLoop = (func) => {
+  return renderer.webglRenderer.setAnimationLoop(func);
+};
+renderer.compile = (a, b) => {
+  return renderer.webglRenderer.compile(a, b);
+};
+renderer.getClearColor = (a) => {
+  return renderer.webglRenderer.getClearColor(a);
+};
+renderer.getRenderTarget = () => {
+  return renderer.webglRenderer.getRenderTarget();
+};
+renderer.setRenderTarget = (a, b, c) => {
+  return renderer.webglRenderer.setRenderTarget(a, b, c);
+};
+Object.defineProperty(renderer, "shadowMap", {
+  get() {
+    return renderer.webglRenderer.shadowMap;
+  },
+});
+
+const camera = window.camera = new Camera();
+
 PhysicsLoader(
   "lib",
   () =>
     new Project({
-      antialias: true,
+      renderer,
+      camera,
       gravity: { x: 0, y: -9.8, z: 0 },
       // gravity: { x: 0, y: 0, z: 0 },
       scenes: [MainScene],

@@ -9,6 +9,7 @@
     "esbuild": "^0.12.20",
     "eslint": "^7.32.0",
     "gsap": "^3.7.1",
+    "holoplay": "^1.0.3",
     "simplex-noise": "^2.4.0"
   }
 }
