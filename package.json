@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "dev": "esbuild --sourcemap --bundle --outfile=bundle.js --watch index.js"
+    "start": "esbuild --sourcemap --bundle --outfile=bundle.js --watch index.js",
+    "build": "esbuild --minify --sourcemap --bundle --outfile=bundle.js index.js"
   },
   "dependencies": {
     "@babel/eslint-parser": "^7.15.0",

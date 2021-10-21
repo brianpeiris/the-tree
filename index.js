@@ -99,6 +99,7 @@ class MainScene extends Scene3D {
       children: [],
       storm: null,
       stormEnabled: true,
+      setNear: false,
     });
     //this.physics.debug.enable();
   }
@@ -106,6 +107,7 @@ class MainScene extends Scene3D {
   addChild(i, x, y, z) {
     const childMesh = this.assets.models.sphere.getObjectByProperty("type", "Mesh").clone();
     childMesh.castShadow = childMesh.receiveShadow = true;
+    childMesh.frustumCulled = false;
     childMesh.material = childMesh.material.clone();
     childMesh.material.metalness = 0.9;
     childMesh.material.roughness = 0;
@@ -203,8 +205,14 @@ class MainScene extends Scene3D {
     // this.camera.position.set(0, 150, 0);
     // this.camera.lookAt(this.scene.position);
 
-    this.scene.fog = new THREE.Fog(0xedf5ff, 30, 40);
+    this.scene.fog = new THREE.Fog(0xf2dfb1, 30, 40);
     window.scene = this;
+
+    const backBox = this.add.box(
+      {y: -60, height: 100, width: 100, depth: 100},
+      { basic: { color: 0xf2dfb1, side: THREE.BackSide } }
+    );
+    backBox.castShadow = false;
 
     this.physics.add.box(
       { collisionFlags: collisionFlags.static, width: 100, height: 10, z: -50, y: -5 },
@@ -227,6 +235,7 @@ class MainScene extends Scene3D {
     const treeMesh = tree.getObjectByProperty("type", "SkinnedMesh");
     treeMesh.pose();
     treeMesh.castShadow = true;
+    treeMesh.frustumCulled = false;
     tree.position.y = -5;
     this.state.tree = tree;
     this.scene.add(tree);
@@ -427,6 +436,7 @@ class MainScene extends Scene3D {
         this.state.marchingCubes.addBall(vec.x, vec.y, vec.z, 0.5, 12);
       }
 
+      /*
       if (!this.scene.environment && time > 0.1) {
         const objectsToToggle = [
           ...this.state.sources,
@@ -441,7 +451,6 @@ class MainScene extends Scene3D {
           obj.visible = false;
         }
 
-        /*
         const renderer = new THREE.WebGLRenderer();
         const pmremGen = new THREE.PMREMGenerator(renderer);
         const renderTarget = pmremGen.fromScene(this.scene, 0, 0.1, 2000);
@@ -459,13 +468,12 @@ class MainScene extends Scene3D {
         this.scene.environment.encoding = THREE.LinearEncoding;
         const plane = this.add.plane({}, {basic: {map: this.scene.environment}});
         plane.scale.setScalar(4);
-        //*/
 
         for (const obj of objectsToToggle) {
           obj.visible = true;
         }
-
       }
+      //*/
 
       if (this.state.stormEnabled) {
         const pos = this.state.storm.geometry.attributes.position;
@@ -491,12 +499,25 @@ class MainScene extends Scene3D {
         }
         pos.needsUpdate = true;
       }
+
+      if (!camera.userData.nearApplied) {
+        if (this.state.setNear) {
+          for (const subCamera of camera.cameras) {
+            subCamera.near = 10;
+            subCamera.updateProjectionMatrix();
+          }
+          camera.userData.nearApplied = true;
+        }
+        if (renderer.quiltRenderer?.calibrationData && camera.cameras?.length) {
+          this.state.setNear = true;
+        }
+      }
     };
   })();
 }
 
 const renderer = window.renderer = new Renderer({ disableFullscreenUi: queryParams.has("2d") });
-renderer.renderQuilt = true;
+renderer.renderQuilt = false;
 renderer.render2d = queryParams.has("2d");
 renderer.setSize = (width, height) => {
   return renderer.webglRenderer.setSize(width, height);
